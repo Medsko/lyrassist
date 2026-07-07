@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:17
+    container_name: lyrassist-postgres
+    environment:
+      POSTGRES_DB: lyrassist
+      POSTGRES_USER: lyrassist
+      POSTGRES_PASSWORD: lyrassist
+    ports:
+      - "5432:5432"
+    volumes:
+      - lyrassist-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lyrassist -d lyrassist"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  lyrassist-pgdata:
