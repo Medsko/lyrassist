@@ -12,8 +12,11 @@ description: Build, launch, and drive Lyrassist (Spring Boot API + React fronten
    `podman run -d --name lyrassist-postgres -e POSTGRES_DB=lyrassist -e POSTGRES_USER=lyrassist -e POSTGRES_PASSWORD=lyrassist -p 5432:5432 -v lyrassist-pgdata:/var/lib/postgresql/data docker.io/library/postgres:17`
    (`podman compose up -d` fails on this machine: no compose provider installed.)
 2. Backend: `cd backend && ./gradlew bootRun` (background; ~5s to start).
-   First run applies Flyway V1 and seeds ~77k words from bundled CSVs; later runs log
-   "Dictionary already seeded".
+   First run applies Flyway V1 and seeds ~15k words from bundled CSVs; later runs log
+   "Dictionary already seeded". To force a reseed (e.g. after regenerating the CSVs with
+   scripts/build-dictionary.py):
+   `podman exec lyrassist-postgres psql -U lyrassist -d lyrassist -c 'TRUNCATE spark, word RESTART IDENTITY CASCADE'`
+   then restart the backend.
 3. Frontend: `cd frontend && npm run dev` (background) → http://localhost:5173,
    proxies `/api` to :8080.
 

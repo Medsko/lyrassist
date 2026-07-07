@@ -37,7 +37,7 @@ Prerequisites: Java (Gradle auto-provisions a JDK 21 toolchain), Node 22+, and P
    ```
 
 2. **Backend** — `cd backend && ./gradlew bootRun`. On first start Flyway creates the
-   schema and the seeder loads ~77k words (20,583 adjectives, 56,751 nouns) from the
+   schema and the seeder loads ~15k words (5,320 adjectives, 9,615 nouns) from the
    bundled WordNet-derived CSVs; subsequent starts skip seeding.
 
 3. **Frontend** — `cd frontend && npm install && npm run dev`, then open
@@ -55,7 +55,10 @@ to be running.
 | `GET /api/sparks` | List saved sparks, newest first |
 | `DELETE /api/sparks/{id}` | Remove a saved spark |
 
-## Known limitations
+## Dictionary
 
-- The WordNet dictionary includes obscure words; frequency-based filtering to make
-  prompts feel less random is a planned improvement.
+The word lists are built by `scripts/build-dictionary.py` from WordNet 3.1 index files,
+dropping multi-word entries, named entities (WordNet "instance" synsets: people, places,
+organizations), and anything outside the top 20,000 words of
+[Norvig's frequency list](https://norvig.com/ngrams/count_1w.txt). Rerun the script and
+truncate the `word` table (cascades to `spark`) to reseed after changing the filters.

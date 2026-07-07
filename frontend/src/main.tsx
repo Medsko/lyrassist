@@ -5,15 +5,18 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import App from './App.tsx'
 import Home from './pages/Home.tsx'
+import NotFound from './pages/NotFound.tsx'
 import WordSparks from './pages/WordSparks.tsx'
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <NotFound />,
     children: [
       { index: true, element: <Home /> },
       { path: 'word-sparks', element: <WordSparks /> },
+      { path: '*', element: <NotFound /> },
     ],
   },
 ])
