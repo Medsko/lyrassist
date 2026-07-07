@@ -13,6 +13,13 @@ The home screen offers a grid of assist modes. Currently available:
 
 - **Word Sparks** — generates a chosen number (1–20) of adjective + noun pairs as
   inspiration prompts. Save the pairs that spark something.
+- **Object Writing** — Pat Pattison's exercise: one random noun, a countdown, and you
+  write about it through the seven senses (sight, sound, smell, taste, touch, body,
+  motion). Pieces are saved for later mining.
+
+There is also an app-wide timer in the navbar (for e.g. Jeff Tweedy's write-a-song-in-20-
+minutes exercise); it keeps counting across modes, and Object Writing drives it too.
+See `roadmap.md` for planned modes.
 
 ## Stack
 
@@ -54,6 +61,10 @@ to be running.
 | `POST /api/sparks` `{adjectiveId, nounId}` | Save a pair (409 on duplicate) |
 | `GET /api/sparks` | List saved sparks, newest first |
 | `DELETE /api/sparks/{id}` | Remove a saved spark |
+| `GET /api/object-writing/prompt` | One random noun to write about |
+| `POST /api/object-writing/pieces` `{nounId, body, durationSeconds}` | Save a finished piece |
+| `GET /api/object-writing/pieces` | List saved pieces, newest first |
+| `DELETE /api/object-writing/pieces/{id}` | Remove a piece |
 
 ## Dictionary
 

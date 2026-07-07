@@ -6,7 +6,9 @@ import './index.css'
 import App from './App.tsx'
 import Home from './pages/Home.tsx'
 import NotFound from './pages/NotFound.tsx'
+import ObjectWriting from './pages/ObjectWriting.tsx'
 import WordSparks from './pages/WordSparks.tsx'
+import { TimerProvider } from './timer/TimerContext.tsx'
 
 const router = createBrowserRouter([
   {
@@ -16,6 +18,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'word-sparks', element: <WordSparks /> },
+      { path: 'object-writing', element: <ObjectWriting /> },
       { path: '*', element: <NotFound /> },
     ],
   },
@@ -23,6 +26,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <TimerProvider>
+      <RouterProvider router={router} />
+    </TimerProvider>
   </StrictMode>,
 )

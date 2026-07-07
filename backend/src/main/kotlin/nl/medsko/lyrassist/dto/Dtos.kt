@@ -1,5 +1,10 @@
 package nl.medsko.lyrassist.dto
 
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
+import nl.medsko.lyrassist.domain.ObjectWriting
 import nl.medsko.lyrassist.domain.Spark
 import nl.medsko.lyrassist.domain.Word
 import java.time.Instant
@@ -25,3 +30,26 @@ data class SparkDto(
 }
 
 data class SaveSparkRequest(val adjectiveId: Long, val nounId: Long)
+
+data class ObjectWritingDto(
+    val id: Long,
+    val noun: WordDto,
+    val body: String,
+    val durationSeconds: Int,
+    val createdAt: Instant,
+) {
+    companion object {
+        fun from(piece: ObjectWriting) =
+            ObjectWritingDto(piece.id, WordDto.from(piece.noun), piece.body, piece.durationSeconds, piece.createdAt)
+    }
+}
+
+data class SaveObjectWritingRequest(
+    val nounId: Long,
+    @field:NotBlank
+    @field:Size(max = 50_000)
+    val body: String,
+    @field:Min(10)
+    @field:Max(3600)
+    val durationSeconds: Int,
+)

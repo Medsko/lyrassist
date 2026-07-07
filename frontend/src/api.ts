@@ -52,3 +52,35 @@ export function fetchSparks(): Promise<Spark[]> {
 export function deleteSpark(id: number): Promise<void> {
   return request(`/api/sparks/${id}`, { method: 'DELETE' })
 }
+
+export interface ObjectWriting {
+  id: number
+  noun: Word
+  body: string
+  durationSeconds: number
+  createdAt: string
+}
+
+export function fetchObjectWritingPrompt(): Promise<Word> {
+  return request('/api/object-writing/prompt')
+}
+
+export function saveObjectWriting(
+  nounId: number,
+  body: string,
+  durationSeconds: number,
+): Promise<ObjectWriting> {
+  return request('/api/object-writing/pieces', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nounId, body, durationSeconds }),
+  })
+}
+
+export function fetchObjectWritings(): Promise<ObjectWriting[]> {
+  return request('/api/object-writing/pieces')
+}
+
+export function deleteObjectWriting(id: number): Promise<void> {
+  return request(`/api/object-writing/pieces/${id}`, { method: 'DELETE' })
+}

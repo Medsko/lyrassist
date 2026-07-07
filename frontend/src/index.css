@@ -5,3 +5,31 @@
 .mode-tile:hover {
   border-color: var(--bs-primary);
 }
+
+.timer-countdown {
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5rem;
+}
+
+.timer-urgent {
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.timer-finished {
+  animation: timer-alarm 0.6s ease-in-out 4;
+}
+
+@keyframes timer-alarm {
+  20% {
+    transform: rotate(-6deg) scale(1.15);
+  }
+  60% {
+    transform: rotate(6deg) scale(1.15);
+  }
+}

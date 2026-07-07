@@ -11,7 +11,12 @@ export const MODES: Mode[] = [
     description: 'Adjective + noun pairs to spark ideas',
     path: '/word-sparks',
   },
-  ...Array.from({ length: 11 }, () => ({
+  {
+    name: 'Object Writing',
+    description: 'Write about one noun through all seven senses, against the clock',
+    path: '/object-writing',
+  },
+  ...Array.from({ length: 10 }, () => ({
     name: 'Coming soon',
     description: 'A future way to assist your writing',
   })),

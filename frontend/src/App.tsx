@@ -1,5 +1,6 @@
 import { Container, Navbar } from 'react-bootstrap'
 import { Link, Outlet } from 'react-router'
+import TimerWidget from './timer/TimerWidget'
 
 function App() {
   return (
@@ -9,7 +10,10 @@ function App() {
           <Navbar.Brand as={Link} to="/">
             Lyrassist
           </Navbar.Brand>
-          <Navbar.Text>sparks, not songs</Navbar.Text>
+          <div className="d-flex align-items-center gap-3">
+            <Navbar.Text>sparks, not songs</Navbar.Text>
+            <TimerWidget />
+          </div>
         </Container>
       </Navbar>
       <Container className="pb-5">
