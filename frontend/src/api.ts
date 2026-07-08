@@ -53,6 +53,33 @@ export function deleteSpark(id: number): Promise<void> {
   return request(`/api/sparks/${id}`, { method: 'DELETE' })
 }
 
+export interface RhymeWord {
+  lemma: string
+  syllableCount: number | null
+}
+
+export interface RhymeGroup {
+  /** Full match count; words is capped by the backend. */
+  total: number
+  words: RhymeWord[]
+}
+
+export interface RhymeResult {
+  word: string
+  pronunciation: string
+  syllableCount: number | null
+  perfect: RhymeGroup
+  family: RhymeGroup
+  additive: RhymeGroup
+  subtractive: RhymeGroup
+  assonance: RhymeGroup
+  consonance: RhymeGroup
+}
+
+export function fetchRhymes(word: string): Promise<RhymeResult> {
+  return request(`/api/rhymes?word=${encodeURIComponent(word)}`)
+}
+
 export interface ObjectWriting {
   id: number
   noun: Word

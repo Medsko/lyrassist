@@ -16,7 +16,12 @@ export const MODES: Mode[] = [
     description: 'Write about one noun through all seven senses, against the clock',
     path: '/object-writing',
   },
-  ...Array.from({ length: 10 }, () => ({
+  {
+    name: 'Rhyme Explorer',
+    description: 'Perfect, family and near rhymes for any word, Pattison-style',
+    path: '/rhyme-explorer',
+  },
+  ...Array.from({ length: 9 }, () => ({
     name: 'Coming soon',
     description: 'A future way to assist your writing',
   })),

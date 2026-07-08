@@ -23,4 +23,6 @@ class Word(
     @Enumerated(EnumType.STRING)
     val partOfSpeech: PartOfSpeech,
     val syllableCount: Int? = null,
+    /** ARPAbet phonemes with stress digits (e.g. "L AH1 V"); null when cmudict lacks the word. */
+    val pronunciation: String? = null,
 )

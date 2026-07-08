@@ -44,6 +44,23 @@ data class ObjectWritingDto(
     }
 }
 
+data class RhymeWordDto(val lemma: String, val syllableCount: Int?)
+
+/** One band of the rhyme spectrum; [words] is capped, [total] is the full match count. */
+data class RhymeGroupDto(val total: Int, val words: List<RhymeWordDto>)
+
+data class RhymeResultDto(
+    val word: String,
+    val pronunciation: String,
+    val syllableCount: Int?,
+    val perfect: RhymeGroupDto,
+    val family: RhymeGroupDto,
+    val additive: RhymeGroupDto,
+    val subtractive: RhymeGroupDto,
+    val assonance: RhymeGroupDto,
+    val consonance: RhymeGroupDto,
+)
+
 data class SaveObjectWritingRequest(
     val nounId: Long,
     @field:NotBlank

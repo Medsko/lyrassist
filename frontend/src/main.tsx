@@ -7,6 +7,7 @@ import App from './App.tsx'
 import Home from './pages/Home.tsx'
 import NotFound from './pages/NotFound.tsx'
 import ObjectWriting from './pages/ObjectWriting.tsx'
+import RhymeExplorer from './pages/RhymeExplorer.tsx'
 import WordSparks from './pages/WordSparks.tsx'
 import { TimerProvider } from './timer/TimerContext.tsx'
 
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'word-sparks', element: <WordSparks /> },
       { path: 'object-writing', element: <ObjectWriting /> },
+      { path: 'rhyme-explorer', element: <RhymeExplorer /> },
       { path: '*', element: <NotFound /> },
     ],
   },

@@ -1,23 +1,22 @@
 
+# Bugs/tiny issues
+Cards on the home screen: 4 columns > 3 columns. No 'Coming soon' placeholders.
+
+One known edge: a full page reload mid-exercise ends the session early (the timer lives in React state; the draft survives, but the countdown doesn't). Fixing it means persisting the
+timer's end-time to sessionStorage too — small job, happy to do it if reload-during-writing matters to you.
+
+The prompt endpoint occasionally deals an abstract noun ("perfection"); Pattison prefers concrete objects. Once the synset work lands, filtering prompts to physical-object categories
+(noun.artifact, noun.object, noun.food…) would be a one-liner.
 
 
-## Timer
-For Tweedy's suggestion to force yourself to write (as much as possible of) a song in 20 min. Should keep working across
-all different modes - so one timer app-wide that runs out. A clear visual (upper right corner) and maybe some cool
-animation(s) upon timeout?
+# Features
 
+## Rhyme explorer — done
+Shipped as the Rhyme Explorer mode. The CMU Pronouncing Dictionary import also filled
+the syllable_count column, which future features (meter work, line matching) can lean on.
+Pronunciations are backfilled into existing databases on startup, and the dictionary
+build script is now Kotlin (`./gradlew buildDictionary` in `backend/`).
 
-
-
-## Object Writing 
-the canonical one, from Pat Pattison's Writing Better Lyrics. You get one random noun and write about it for exactly 10 minutes, but only through the senses — sight,
-sound, smell, taste, touch, plus body sensation and motion. The discipline is the timer and the sensory constraint; it trains the "show, don't tell" muscle that lyrics live on. App-wise
-it's small: random noun (you have 9,615), a countdown timer, a text area, and the seven senses as gentle prompts. Crucially, saving the result forces the first differently-shaped idea
-table (a text column, not word references) — exactly the design fork you anticipated with spark.
-
-## Rhyme explorer
-given a word, show perfect rhymes but also family and near rhymes (Pattison again: "love/enough" is more interesting than "love/dove"). This needs pronunciation data —
-the CMU Pronouncing Dictionary — which is the same dataset that fills your dormant syllable_count column. One import, two features.
 
 ## Metaphor collisions "X is Y": two random nouns and you justify the equation ("memory is a landlord"). Zero new data; it's Word Sparks with different framing. Could even be a variant
 button on the existing page rather than a new mode.

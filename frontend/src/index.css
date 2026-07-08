@@ -6,6 +6,21 @@
   border-color: var(--bs-primary);
 }
 
+.spark-word {
+  cursor: grab;
+  border-radius: var(--bs-border-radius-sm);
+  padding: 0.125rem 0.375rem;
+}
+
+.spark-word:active {
+  cursor: grabbing;
+}
+
+.spark-word.drag-over {
+  background-color: var(--bs-secondary-bg);
+  outline: 1px dashed var(--bs-secondary-color);
+}
+
 .timer-countdown {
   font-variant-numeric: tabular-nums;
   min-width: 4.5rem;

@@ -16,6 +16,9 @@ The home screen offers a grid of assist modes. Currently available:
 - **Object Writing** — Pat Pattison's exercise: one random noun, a countdown, and you
   write about it through the seven senses (sight, sound, smell, taste, touch, body,
   motion). Pieces are saved for later mining.
+- **Rhyme Explorer** — given a word, shows rhymes across Pattison's spectrum: perfect,
+  family, additive, subtractive, assonance, and consonance (because "love/enough" is
+  more interesting than "love/dove"). Click any result to explore from there.
 
 There is also an app-wide timer in the navbar (for e.g. Jeff Tweedy's write-a-song-in-20-
 minutes exercise); it keeps counting across modes, and Object Writing drives it too.
@@ -61,6 +64,7 @@ to be running.
 | `POST /api/sparks` `{adjectiveId, nounId}` | Save a pair (409 on duplicate) |
 | `GET /api/sparks` | List saved sparks, newest first |
 | `DELETE /api/sparks/{id}` | Remove a saved spark |
+| `GET /api/rhymes?word=W` | W's rhymes grouped by type (404 if no pronunciation known) |
 | `GET /api/object-writing/prompt` | One random noun to write about |
 | `POST /api/object-writing/pieces` `{nounId, body, durationSeconds}` | Save a finished piece |
 | `GET /api/object-writing/pieces` | List saved pieces, newest first |
@@ -68,8 +72,21 @@ to be running.
 
 ## Dictionary
 
-The word lists are built by `scripts/build-dictionary.py` from WordNet 3.1 index files,
+The word lists are built by the `buildDictionary` Gradle task (`backend/src/main/kotlin/
+nl/medsko/lyrassist/tools/BuildDictionary.kt`) from WordNet 3.1 index files,
 dropping multi-word entries, named entities (WordNet "instance" synsets: people, places,
 organizations), and anything outside the top 20,000 words of
-[Norvig's frequency list](https://norvig.com/ngrams/count_1w.txt). Rerun the script and
-truncate the `word` table (cascades to `spark`) to reseed after changing the filters.
+[Norvig's frequency list](https://norvig.com/ngrams/count_1w.txt). Each word is annotated
+with its ARPAbet pronunciation and syllable count from the
+[CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict) (~79% coverage; words
+without a pronunciation don't appear in rhyme results). To reseed after changing the
+filters, rerun the task (inputs are linked in its KDoc):
+
+```sh
+cd backend && ./gradlew buildDictionary \
+  -PwordnetDir=<wordnet-dict-dir> -Pcount1w=<count_1w.txt> -Pcmudict=<cmudict.dict>
+```
+
+then truncate the `word` table (cascades to `spark`) and restart the backend. Databases seeded
+before pronunciations existed are backfilled in place on startup — no truncate needed,
+saved sparks and pieces survive.

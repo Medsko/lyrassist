@@ -1,6 +1,9 @@
 spring:
   application:
     name: lyrassist
+  mvc:
+    problemdetails:
+      enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5432/lyrassist
     username: lyrassist

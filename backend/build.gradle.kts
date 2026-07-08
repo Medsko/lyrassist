@@ -19,6 +19,11 @@ repositories {
 	mavenCentral()
 }
 
+springBoot {
+	// BuildDictionary.kt has its own main; keep Boot pointed at the app.
+	mainClass = "nl.medsko.lyrassist.LyrassistApplicationKt"
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-flyway")
@@ -50,4 +55,20 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+val wordnetDir = providers.gradleProperty("wordnetDir")
+val count1w = providers.gradleProperty("count1w")
+val cmudict = providers.gradleProperty("cmudict")
+val outDir = providers.gradleProperty("outDir")
+
+tasks.register<JavaExec>("buildDictionary") {
+	group = "application"
+	description =
+		"Regenerate the seed dictionary CSVs. Usage: ./gradlew buildDictionary -PwordnetDir=<dict-dir> -Pcount1w=<count_1w.txt> -Pcmudict=<cmudict.dict>"
+	classpath = sourceSets["main"].runtimeClasspath
+	mainClass = "nl.medsko.lyrassist.tools.BuildDictionaryKt"
+	doFirst {
+		args = listOf(wordnetDir.get(), count1w.get(), cmudict.get()) + listOfNotNull(outDir.orNull)
+	}
 }

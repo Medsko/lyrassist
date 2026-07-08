@@ -15,4 +15,8 @@ interface WordRepository : JpaRepository<Word, Long> {
         @Param("partOfSpeech") partOfSpeech: String,
         @Param("count") count: Int,
     ): List<Word>
+
+    fun findFirstByLemmaAndPronunciationIsNotNull(lemma: String): Word?
+
+    fun findByPronunciationIsNotNull(): List<Word>
 }
