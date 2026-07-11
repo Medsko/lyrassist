@@ -16,10 +16,14 @@ import kotlin.system.exitProcess
  *   people, places, organizations - marked with an @i instance-hypernym pointer)
  * - both: drop words outside the top [FREQUENCY_CUTOFF] of the frequency list
  *   (each hyphen-separated part must be common)
+ * - both: drop the curated [EXCLUDE] junk (Roman numerals, acronyms, brand names)
  *
  * Each word is annotated with its primary CMU Pronouncing Dictionary entry
- * (ARPAbet phonemes with stress digits) and syllable count (= vowel phonemes);
- * both fields are empty for words missing from cmudict. Nouns also carry the
+ * (ARPAbet phonemes with stress digits) and syllable count (= vowel phonemes).
+ * See [resolvePronunciation]: a lemma missing from cmudict falls back to an
+ * American respelling (British spellings) and, for compounds, to its parts'
+ * pronunciations concatenated; both fields stay empty only when even that fails.
+ * Nouns also carry the
  * WordNet lexicographer category of their most common sense (noun.person,
  * noun.location, noun.event, ...); the category field is empty for adjectives,
  * and for senses whose gloss WordNet marks offensive/disparaging (ethnic slurs
@@ -95,6 +99,76 @@ private fun loadPronunciations(cmudict: Path): Map<String, String> {
     return pronunciations
 }
 
+/**
+ * British -> American suffix rewrites, longest first. cmudict is American, so we
+ * spell a British lemma the American way to borrow its pronunciation (the sound is
+ * the same); the lemma itself stays British in the CSV.
+ */
+private val BRITISH_SUFFIXES = listOf(
+    "isational" to "izational", "isation" to "ization",
+    "ising" to "izing", "iser" to "izer", "ised" to "ized", "ise" to "ize",
+    "ourable" to "orable", "ouring" to "oring", "oured" to "ored",
+    "oural" to "oral", "ours" to "ors", "our" to "or",
+    "ellor" to "elor", "elling" to "eling", "elled" to "eled",
+    "olment" to "ollment", "ence" to "ense", "tre" to "ter", "yse" to "yze",
+)
+
+/** Irregular British spellings the suffix rules don't reach. */
+private val WHOLE_WORD_ALIASES = mapOf(
+    "ageing" to "aging", "jewellery" to "jewelry", "maths" to "math",
+    "councillor" to "councilor", "centred" to "centered",
+    "co-ordinator" to "coordinator", "transexual" to "transsexual",
+)
+
+/** American-spelling candidates to try in cmudict for a lemma missing from it. */
+private fun usCandidates(word: String): List<String> = buildList {
+    WHOLE_WORD_ALIASES[word]?.let { add(it) }
+    for ((british, american) in BRITISH_SUFFIXES) {
+        if (word.endsWith(british)) add(word.dropLast(british.length) + american)
+    }
+}
+
+/**
+ * Resolves a lemma's ARPAbet pronunciation: a direct cmudict hit, else an
+ * American respelling, else - for a hyphenated compound - the parts' pronunciations
+ * concatenated (rhyme keys off the last stressed vowel, so the final part still
+ * carries the rhyme). Null when a part cannot be resolved.
+ */
+private fun resolvePronunciation(lemma: String, cmudict: Map<String, String>): String? {
+    fun lookup(word: String): String? =
+        cmudict[word] ?: usCandidates(word).firstNotNullOfOrNull { cmudict[it] }
+    lookup(lemma)?.let { return it }
+    if ("-" !in lemma) return null
+    return lemma.split("-").map { part -> lookup(part) ?: return null }.joinToString(" ")
+}
+
+/**
+ * Lemmas dropped entirely: cmudict has no pronunciation (so they can never rhyme)
+ * and they are not words a lyricist would want sparked - Roman numerals,
+ * initialisms/acronyms, unit abbreviations, and brand/drug/genus names. Genuine but
+ * unpronounced words (beanie, checksum, sudoku, ...) are kept; they still serve the
+ * non-rhyme modes.
+ */
+private val EXCLUDE = setOf(
+    // Roman numerals
+    "iii", "vii", "viii", "xii", "xiii", "xiv", "xvi", "xxx",
+    // Initialisms, acronyms, unit and calendar abbreviations
+    "adp", "afp", "ans", "apr", "asin", "bbs", "bmi", "bpm", "bse", "ccc", "cdna",
+    "cli", "cns", "cpa", "cpi", "cpr", "crt", "cst", "dba", "dds", "dit", "dod",
+    "dsl", "dts", "ecc", "ect", "eds", "esp", "esq", "faa", "faq", "fas", "fha",
+    "fps", "fri", "fsb", "ftc", "ft-l", "gcse", "ghz", "gmt", "gop", "gpa", "gpo",
+    "gsa", "gui", "hdtv", "hhs", "icc", "iis", "imf", "inst", "ipo", "khz", "kw-hr",
+    "lcd", "mem", "mhz", "mls", "mot", "mps", "mrna", "msc", "msg", "mst", "mus",
+    "mvp", "nih", "nrc", "nsa", "nsf", "nsu", "nsw", "omb", "otc", "pbs", "pct",
+    "pda", "pfc", "phs", "pid", "pms", "ppp", "psa", "pst", "rbi", "sgml", "sion",
+    "sle", "snp", "spf", "ssa", "std", "stp", "tcp", "thb", "tnt", "tues", "utc",
+    "usps", "vcr", "vhf", "wac", "wlan", "wmd", "wto", "www", "xtc",
+    // Brand, drug and genus names
+    "alprazolam", "arabidopsis", "ativan", "burberry", "celebrex", "diazepam",
+    "drosophila", "escherichia", "fortran", "levitra", "lipitor", "medline",
+    "paxil", "vioxx", "xmas",
+)
+
 /** Lemma -> offset of its most common synset (index files list offsets by sense frequency). */
 private fun loadIndexLemmas(indexFile: Path): Map<String, String> =
     indexFile.readLines()
@@ -119,7 +193,7 @@ fun main(args: Array<String>) {
     fun isCommon(lemma: String) = lemma.split("-").all { (ranks[it] ?: Int.MAX_VALUE) <= FREQUENCY_CUTOFF }
 
     fun toRow(lemma: String, category: String): String {
-        val phonemes = pronunciations[lemma] ?: ""
+        val phonemes = resolvePronunciation(lemma, pronunciations) ?: ""
         val syllables =
             if (phonemes.isEmpty()) "" else phonemes.split(WHITESPACE).count { it.last().isDigit() }.toString()
         return "$lemma,$phonemes,$syllables,$category"
@@ -127,11 +201,11 @@ fun main(args: Array<String>) {
 
     val synsets = parseDataNoun(dictDir.resolve("data.noun"))
     val adjectives = loadIndexLemmas(dictDir.resolve("index.adj")).keys
-        .filter(::isCommon)
+        .filter { isCommon(it) && it !in EXCLUDE }
         .sorted()
         .associateWith { "" }
     val nouns = loadIndexLemmas(dictDir.resolve("index.noun"))
-        .filterKeys { it !in synsets.instanceOnly && isCommon(it) }
+        .filterKeys { it !in synsets.instanceOnly && isCommon(it) && it !in EXCLUDE }
         .toSortedMap()
         .mapValues { (_, offset) -> synsets.categoryByOffset[offset] ?: "" }
 
@@ -139,7 +213,7 @@ fun main(args: Array<String>) {
     for ((name, words) in listOf("adjectives.csv" to adjectives, "nouns.csv" to nouns)) {
         outDir.resolve(name)
             .writeText(words.entries.joinToString("\n", postfix = "\n") { (lemma, cat) -> toRow(lemma, cat) })
-        val covered = words.keys.count { it in pronunciations }
+        val covered = words.keys.count { resolvePronunciation(it, pronunciations) != null }
         println("$name: ${words.size} words, $covered with pronunciation")
     }
 }
