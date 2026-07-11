@@ -1,8 +1,5 @@
 # Lyrassist
 
-claude --resume 0530708d-85e9-4d99-94b0-2eab634bbff9
-
-
 A web app that assists a human lyricist — it doesn't write songs, it sparks them.
 Lyrassist generates word-pair prompts, lets you save the ones you like, and will later
 help you combine saved ideas into snippets, lines, and eventually songs.
@@ -41,15 +38,9 @@ See `roadmap.md` for planned modes.
 Prerequisites: Java (Gradle auto-provisions a JDK 21 toolchain), Node 22+, and Podman
 (or Docker) for PostgreSQL.
 
-1. **Database** — with a compose provider: `podman compose up -d` (or `docker compose up -d`).
-   Without one, plain podman works too:
-
-   ```sh
-   podman run -d --name lyrassist-postgres \
-     -e POSTGRES_DB=lyrassist -e POSTGRES_USER=lyrassist -e POSTGRES_PASSWORD=lyrassist \
-     -p 5432:5432 -v lyrassist-pgdata:/var/lib/postgresql/data \
-     docker.io/library/postgres:17
-   ```
+1. **Database** — first time: `podman compose up -d` (or `docker compose up -d`) to create
+   and start the container. After that, `podman start lyrassist-postgres` (or
+   `podman compose start`) brings it back up.
 
 2. **Backend** — `cd backend && ./gradlew bootRun`. On first start Flyway creates the
    schema and the seeder loads ~15k words (5,320 adjectives, 9,615 nouns) from the
@@ -63,25 +54,14 @@ to be running.
 
 ## API
 
-| Method & path | Behavior |
-|---|---|
-| `GET /api/word-sparks/pairs?count=N` | N (1–20) random adjective + noun pairs |
-| `POST /api/sparks` `{adjectiveId, nounId}` | Save a pair (409 on duplicate) |
-| `GET /api/sparks` | List saved sparks, newest first |
-| `DELETE /api/sparks/{id}` | Remove a saved spark |
-| `GET /api/word-sparks/metaphors?count=N` | N (1–20) random noun + noun metaphor pairs |
-| `POST /api/metaphors` `{tenorId, vehicleId}` | Save a metaphor (409 on duplicate) |
-| `GET /api/metaphors` | List saved metaphors, newest first |
-| `DELETE /api/metaphors/{id}` | Remove a saved metaphor |
-| `GET /api/rhymes?word=W` | W's rhymes grouped by type (404 if no pronunciation known) |
-| `GET /api/story-seeds/prompt` | Random who / where / conflict prompt |
-| `POST /api/story-seeds` `{whoId, where, conflict}` | Save a seed |
-| `GET /api/story-seeds` | List saved seeds, newest first |
-| `DELETE /api/story-seeds/{id}` | Remove a seed |
-| `GET /api/object-writing/prompt` | One random concrete noun to write about |
-| `POST /api/object-writing/pieces` `{nounId, body, durationSeconds}` | Save a finished piece |
-| `GET /api/object-writing/pieces` | List saved pieces, newest first |
-| `DELETE /api/object-writing/pieces/{id}` | Remove a piece |
+| Base path | Controller | Behavior |
+|---|---|---|
+| `/api/word-sparks` | `WordSparksController` | Generate word-pair prompts: `GET /pairs?count=N` (adjective + noun) and `GET /metaphors?count=N` (noun + noun), N is 1–20 |
+| `/api/sparks` | `SparkController` | CRUD for saved word-spark pairs |
+| `/api/metaphors` | `MetaphorController` | CRUD for saved metaphor pairs |
+| `/api/rhymes` | `RhymeController` | `GET ?word=W` — W's rhymes grouped by Pattison type (404 if no pronunciation known) |
+| `/api/story-seeds` | `StorySeedController` | `GET /prompt` for a random who / where / conflict prompt, plus CRUD for saved seeds |
+| `/api/object-writing` | `ObjectWritingController` | `GET /prompt` for a random concrete noun, plus CRUD for saved pieces under `/pieces` |
 
 ## Dictionary
 
