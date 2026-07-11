@@ -25,4 +25,9 @@ class Word(
     val syllableCount: Int? = null,
     /** ARPAbet phonemes with stress digits (e.g. "L AH1 V"); null when cmudict lacks the word. */
     val pronunciation: String? = null,
+    /**
+     * WordNet lexicographer category of the most common sense (e.g. "noun.person");
+     * null for adjectives and for senses WordNet marks offensive.
+     */
+    val category: String? = null,
 )

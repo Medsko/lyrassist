@@ -2,6 +2,7 @@ package nl.medsko.lyrassist.controller
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import nl.medsko.lyrassist.dto.MetaphorPairDto
 import nl.medsko.lyrassist.dto.PairDto
 import nl.medsko.lyrassist.service.WordSparksService
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,4 +18,9 @@ class WordSparksController(private val wordSparksService: WordSparksService) {
     fun pairs(
         @RequestParam @Min(1) @Max(20) count: Int,
     ): List<PairDto> = wordSparksService.generatePairs(count)
+
+    @GetMapping("/metaphors")
+    fun metaphors(
+        @RequestParam @Min(1) @Max(20) count: Int,
+    ): List<MetaphorPairDto> = wordSparksService.generateMetaphorPairs(count)
 }

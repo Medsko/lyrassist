@@ -1,27 +1,49 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Card, Col, Form, ListGroup, Row } from 'react-bootstrap'
+import { Alert, Button, ButtonGroup, Card, Col, Form, ListGroup, Row } from 'react-bootstrap'
 import {
+  deleteMetaphor,
   deleteSpark,
+  fetchMetaphorPairs,
+  fetchMetaphors,
   fetchPairs,
   fetchSparks,
+  saveMetaphor,
   saveSpark,
-  type Pair,
+  type Metaphor,
   type Spark,
+  type Word,
 } from '../api'
+import { article } from '../words'
 
-const pairKey = (adjectiveId: number, nounId: number) => `${adjectiveId}:${nounId}`
+const pairKey = (leftId: number, rightId: number) => `${leftId}:${rightId}`
 
-type WordType = 'adjective' | 'noun'
+// Both variants deal a left + right word; sparks are adjective + noun,
+// metaphor collisions are tenor + vehicle ("memory is a landlord").
+type Variant = 'sparks' | 'metaphors'
+
+interface Duo {
+  left: Word
+  right: Word
+}
+
+type WordSide = 'left' | 'right'
 
 interface DragSource {
   index: number
-  type: WordType
+  side: WordSide
 }
 
+const VARIANTS: { key: Variant; label: string; verb: string; busy: string }[] = [
+  { key: 'sparks', label: 'Adjective + noun', verb: 'Spark', busy: 'Sparking…' },
+  { key: 'metaphors', label: 'Metaphor collision', verb: 'Collide', busy: 'Colliding…' },
+]
+
 export default function WordSparks() {
+  const [variant, setVariant] = useState<Variant>('sparks')
   const [count, setCount] = useState(5)
-  const [pairs, setPairs] = useState<Pair[]>([])
+  const [duos, setDuos] = useState<Record<Variant, Duo[]>>({ sparks: [], metaphors: [] })
   const [sparks, setSparks] = useState<Spark[]>([])
+  const [metaphors, setMetaphors] = useState<Metaphor[]>([])
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [draggedSource, setDraggedSource] = useState<DragSource | null>(null)
@@ -29,15 +51,25 @@ export default function WordSparks() {
 
   useEffect(() => {
     fetchSparks().then(setSparks).catch((e: Error) => setError(e.message))
+    fetchMetaphors().then(setMetaphors).catch((e: Error) => setError(e.message))
   }, [])
 
-  const savedKeys = new Set(sparks.map((s) => pairKey(s.adjective.id, s.noun.id)))
+  const { verb, busy } = VARIANTS.find((v) => v.key === variant)!
+  const pairs = duos[variant]
+  const savedKeys =
+    variant === 'sparks'
+      ? new Set(sparks.map((s) => pairKey(s.adjective.id, s.noun.id)))
+      : new Set(metaphors.map((m) => pairKey(m.tenor.id, m.vehicle.id)))
 
   async function generate() {
     setGenerating(true)
     setError(null)
     try {
-      setPairs(await fetchPairs(count))
+      const dealt =
+        variant === 'sparks'
+          ? (await fetchPairs(count)).map((p) => ({ left: p.adjective, right: p.noun }))
+          : (await fetchMetaphorPairs(count)).map((m) => ({ left: m.tenor, right: m.vehicle }))
+      setDuos((current) => ({ ...current, [variant]: dealt }))
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -45,21 +77,36 @@ export default function WordSparks() {
     }
   }
 
-  async function save(pair: Pair) {
+  async function save(duo: Duo) {
     setError(null)
     try {
-      const spark = await saveSpark(pair.adjective.id, pair.noun.id)
-      setSparks((current) => [spark, ...current])
+      if (variant === 'sparks') {
+        const spark = await saveSpark(duo.left.id, duo.right.id)
+        setSparks((current) => [spark, ...current])
+      } else {
+        const metaphor = await saveMetaphor(duo.left.id, duo.right.id)
+        setMetaphors((current) => [metaphor, ...current])
+      }
     } catch (e) {
       setError((e as Error).message)
     }
   }
 
-  async function remove(id: number) {
+  async function removeSpark(id: number) {
     setError(null)
     try {
       await deleteSpark(id)
       setSparks((current) => current.filter((s) => s.id !== id))
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
+  async function removeMetaphor(id: number) {
+    setError(null)
+    try {
+      await deleteMetaphor(id)
+      setMetaphors((current) => current.filter((m) => m.id !== id))
     } catch (e) {
       setError((e as Error).message)
     }
@@ -101,21 +148,30 @@ export default function WordSparks() {
       }
     }
     if (!source || source.index === targetIndex) return
-    const { index: sourceIndex, type } = source
-    setPairs((current) => {
-      const next = [...current]
+    const { index: sourceIndex, side } = source
+    setDuos((current) => {
+      const next = [...current[variant]]
       const a = next[sourceIndex]
       const b = next[targetIndex]
       if (!a || !b) return current
-      if (type === 'adjective') {
-        next[sourceIndex] = { ...a, adjective: b.adjective }
-        next[targetIndex] = { ...b, adjective: a.adjective }
-      } else {
-        next[sourceIndex] = { ...a, noun: b.noun }
-        next[targetIndex] = { ...b, noun: a.noun }
-      }
-      return next
+      next[sourceIndex] = { ...a, [side]: b[side] }
+      next[targetIndex] = { ...b, [side]: a[side] }
+      return { ...current, [variant]: next }
     })
+  }
+
+  function draggableWord(duo: Duo, index: number, side: WordSide, className: string) {
+    const isDragOver = dragOverIndex === index && draggedSource?.index !== index
+    return (
+      <span
+        className={className + ' spark-word' + (isDragOver && draggedSource?.side === side ? ' drag-over' : '')}
+        draggable
+        onDragStart={(e) => onWordDragStart(e, { index, side })}
+        onDragEnd={onWordDragEnd}
+      >
+        {duo[side].lemma}
+      </span>
+    )
   }
 
   return (
@@ -130,6 +186,19 @@ export default function WordSparks() {
         <Col lg={7}>
           <Card className="shadow-sm mb-4">
             <Card.Body>
+              <div className="mb-3">
+                <ButtonGroup>
+                  {VARIANTS.map((v) => (
+                    <Button
+                      key={v.key}
+                      variant={variant === v.key ? 'primary' : 'outline-primary'}
+                      onClick={() => setVariant(v.key)}
+                    >
+                      {v.label}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </div>
               <Form.Label htmlFor="pair-count">
                 Number of pairs: <strong>{count}</strong>
               </Form.Label>
@@ -145,7 +214,7 @@ export default function WordSparks() {
                 </Col>
                 <Col xs="auto">
                   <Button onClick={generate} disabled={generating}>
-                    {generating ? 'Sparking…' : 'Spark'}
+                    {generating ? busy : verb}
                   </Button>
                 </Col>
               </Row>
@@ -159,9 +228,8 @@ export default function WordSparks() {
                 comes back to where you dragged from.
               </p>
               <ListGroup>
-                {pairs.map((pair, index) => {
-                  const saved = savedKeys.has(pairKey(pair.adjective.id, pair.noun.id))
-                  const isDragOver = dragOverIndex === index && draggedSource?.index !== index
+                {pairs.map((duo, index) => {
+                  const saved = savedKeys.has(pairKey(duo.left.id, duo.right.id))
                   return (
                     <ListGroup.Item
                       key={index}
@@ -170,34 +238,26 @@ export default function WordSparks() {
                       onDragLeave={(e) => onRowDragLeave(e, index)}
                       onDrop={(e) => onRowDrop(e, index)}
                     >
-                      <span
-                        className={
-                          'w-50 text-end pe-2 spark-word' +
-                          (isDragOver && draggedSource?.type === 'adjective' ? ' drag-over' : '')
-                        }
-                        draggable
-                        onDragStart={(e) => onWordDragStart(e, { index, type: 'adjective' })}
-                        onDragEnd={onWordDragEnd}
-                      >
-                        {pair.adjective.lemma}
-                      </span>
-                      <span
-                        className={
-                          'w-50 ps-2 fw-semibold spark-word' +
-                          (isDragOver && draggedSource?.type === 'noun' ? ' drag-over' : '')
-                        }
-                        draggable
-                        onDragStart={(e) => onWordDragStart(e, { index, type: 'noun' })}
-                        onDragEnd={onWordDragEnd}
-                      >
-                        {pair.noun.lemma}
-                      </span>
+                      {variant === 'sparks' ? (
+                        <>
+                          {draggableWord(duo, index, 'left', 'w-50 text-end pe-2')}
+                          {draggableWord(duo, index, 'right', 'w-50 ps-2 fw-semibold')}
+                        </>
+                      ) : (
+                        <>
+                          {draggableWord(duo, index, 'left', 'w-50 text-end pe-2 fw-semibold')}
+                          <span className="text-body-secondary px-1 text-nowrap">
+                            is {article(duo.right.lemma)}
+                          </span>
+                          {draggableWord(duo, index, 'right', 'w-50 ps-1 fw-semibold')}
+                        </>
+                      )}
                       <Button
                         variant={saved ? 'warning' : 'outline-secondary'}
                         size="sm"
-                        onClick={() => save(pair)}
+                        onClick={() => save(duo)}
                         disabled={saved}
-                        title={saved ? 'Already saved' : 'Save this spark'}
+                        title={saved ? 'Already saved' : variant === 'sparks' ? 'Save this spark' : 'Save this metaphor'}
                       >
                         {saved ? '★' : '☆'}
                       </Button>
@@ -210,29 +270,61 @@ export default function WordSparks() {
         </Col>
 
         <Col lg={5}>
-          <h2 className="h5 mb-3">Saved sparks</h2>
-          {sparks.length === 0 ? (
-            <p className="text-body-secondary">
-              Nothing saved yet — generate some pairs and star the ones that spark something.
-            </p>
+          {variant === 'sparks' ? (
+            <>
+              <h2 className="h5 mb-3">Saved sparks</h2>
+              {sparks.length === 0 ? (
+                <p className="text-body-secondary">
+                  Nothing saved yet — generate some pairs and star the ones that spark something.
+                </p>
+              ) : (
+                <ListGroup>
+                  {sparks.map((spark) => (
+                    <ListGroup.Item key={spark.id} className="d-flex align-items-center">
+                      <span className="flex-grow-1">
+                        {spark.adjective.lemma} <strong>{spark.noun.lemma}</strong>
+                      </span>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeSpark(spark.id)}
+                        title="Delete this spark"
+                      >
+                        ✕
+                      </Button>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              )}
+            </>
           ) : (
-            <ListGroup>
-              {sparks.map((spark) => (
-                <ListGroup.Item key={spark.id} className="d-flex align-items-center">
-                  <span className="flex-grow-1">
-                    {spark.adjective.lemma} <strong>{spark.noun.lemma}</strong>
-                  </span>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={() => remove(spark.id)}
-                    title="Delete this spark"
-                  >
-                    ✕
-                  </Button>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
+            <>
+              <h2 className="h5 mb-3">Saved metaphors</h2>
+              {metaphors.length === 0 ? (
+                <p className="text-body-secondary">
+                  Nothing saved yet — collide some nouns and star the equations worth arguing for.
+                </p>
+              ) : (
+                <ListGroup>
+                  {metaphors.map((metaphor) => (
+                    <ListGroup.Item key={metaphor.id} className="d-flex align-items-center">
+                      <span className="flex-grow-1">
+                        <strong>{metaphor.tenor.lemma}</strong> is {article(metaphor.vehicle.lemma)}{' '}
+                        <strong>{metaphor.vehicle.lemma}</strong>
+                      </span>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeMetaphor(metaphor.id)}
+                        title="Delete this metaphor"
+                      >
+                        ✕
+                      </Button>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              )}
+            </>
           )}
         </Col>
       </Row>

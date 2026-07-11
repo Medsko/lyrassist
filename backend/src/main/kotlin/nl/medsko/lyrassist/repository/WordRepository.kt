@@ -16,6 +16,15 @@ interface WordRepository : JpaRepository<Word, Long> {
         @Param("count") count: Int,
     ): List<Word>
 
+    @Query(
+        value = "SELECT * FROM word WHERE category IN (:categories) ORDER BY random() LIMIT :count",
+        nativeQuery = true,
+    )
+    fun findRandomByCategoryIn(
+        @Param("categories") categories: List<String>,
+        @Param("count") count: Int,
+    ): List<Word>
+
     fun findFirstByLemmaAndPronunciationIsNotNull(lemma: String): Word?
 
     fun findByPronunciationIsNotNull(): List<Word>

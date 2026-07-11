@@ -8,7 +8,7 @@ export interface Mode {
 export const MODES: Mode[] = [
   {
     name: 'Word Sparks',
-    description: 'Adjective + noun pairs to spark ideas',
+    description: 'Adjective + noun pairs to spark ideas — or noun collisions to argue into metaphors',
     path: '/word-sparks',
   },
   {
@@ -21,7 +21,12 @@ export const MODES: Mode[] = [
     description: 'Perfect, family and near rhymes for any word, Pattison-style',
     path: '/rhyme-explorer',
   },
-  ...Array.from({ length: 9 }, () => ({
+  {
+    name: 'Story Seeds',
+    description: 'A who, a where and a conflict to grow a narrative song from',
+    path: '/story-seeds',
+  },
+  ...Array.from({ length: 8 }, () => ({
     name: 'Coming soon',
     description: 'A future way to assist your writing',
   })),

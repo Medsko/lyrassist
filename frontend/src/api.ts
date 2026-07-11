@@ -80,6 +80,73 @@ export function fetchRhymes(word: string): Promise<RhymeResult> {
   return request(`/api/rhymes?word=${encodeURIComponent(word)}`)
 }
 
+/** A Metaphor Collision "tenor is vehicle": "memory is a landlord". */
+export interface MetaphorPair {
+  tenor: Word
+  vehicle: Word
+}
+
+export interface Metaphor {
+  id: number
+  tenor: Word
+  vehicle: Word
+  createdAt: string
+}
+
+export function fetchMetaphorPairs(count: number): Promise<MetaphorPair[]> {
+  return request(`/api/word-sparks/metaphors?count=${count}`)
+}
+
+export function saveMetaphor(tenorId: number, vehicleId: number): Promise<Metaphor> {
+  return request('/api/metaphors', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tenorId, vehicleId }),
+  })
+}
+
+export function fetchMetaphors(): Promise<Metaphor[]> {
+  return request('/api/metaphors')
+}
+
+export function deleteMetaphor(id: number): Promise<void> {
+  return request(`/api/metaphors/${id}`, { method: 'DELETE' })
+}
+
+export interface StorySeedPrompt {
+  who: Word
+  where: string
+  conflict: string
+}
+
+export interface StorySeed {
+  id: number
+  who: Word
+  where: string
+  conflict: string
+  createdAt: string
+}
+
+export function fetchStorySeedPrompt(): Promise<StorySeedPrompt> {
+  return request('/api/story-seeds/prompt')
+}
+
+export function saveStorySeed(whoId: number, where: string, conflict: string): Promise<StorySeed> {
+  return request('/api/story-seeds', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ whoId, where, conflict }),
+  })
+}
+
+export function fetchStorySeeds(): Promise<StorySeed[]> {
+  return request('/api/story-seeds')
+}
+
+export function deleteStorySeed(id: number): Promise<void> {
+  return request(`/api/story-seeds/${id}`, { method: 'DELETE' })
+}
+
 export interface ObjectWriting {
   id: number
   noun: Word

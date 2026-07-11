@@ -20,7 +20,7 @@ class ObjectWritingService(
 
     @Transactional(readOnly = true)
     fun randomPrompt(): WordDto =
-        wordRepository.findRandomByPartOfSpeech(PartOfSpeech.NOUN.name, 1)
+        wordRepository.findRandomByCategoryIn(CONCRETE_CATEGORIES, 1)
             .firstOrNull()
             ?.let(WordDto::from)
             ?: throw ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Dictionary is empty")
@@ -47,5 +47,16 @@ class ObjectWritingService(
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "No object writing with id $id")
         }
         objectWritingRepository.deleteById(id)
+    }
+
+    companion object {
+        /**
+         * Pattison wants concrete, sense-writable objects, not abstractions
+         * like "perfection" — so prompts draw only from physical categories.
+         */
+        private val CONCRETE_CATEGORIES = listOf(
+            "noun.animal", "noun.artifact", "noun.body", "noun.food",
+            "noun.object", "noun.plant", "noun.substance",
+        )
     }
 }

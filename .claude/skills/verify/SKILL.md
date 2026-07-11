@@ -14,7 +14,7 @@ description: Build, launch, and drive Lyrassist (Spring Boot API + React fronten
 2. Backend: `cd backend && ./gradlew bootRun` (background; ~5s to start).
    First run applies Flyway V1 and seeds ~15k words from bundled CSVs; later runs log
    "Dictionary already seeded". To force a reseed (e.g. after regenerating the CSVs with
-   scripts/build-dictionary.py):
+   the buildDictionary Gradle task):
    `podman exec lyrassist-postgres psql -U lyrassist -d lyrassist -c 'TRUNCATE spark, word RESTART IDENTITY CASCADE'`
    then restart the backend.
 3. Frontend: `cd frontend && npm run dev` (background) → http://localhost:5173,

@@ -1,6 +1,7 @@
 package nl.medsko.lyrassist.service
 
 import nl.medsko.lyrassist.domain.PartOfSpeech
+import nl.medsko.lyrassist.dto.MetaphorPairDto
 import nl.medsko.lyrassist.dto.PairDto
 import nl.medsko.lyrassist.dto.WordDto
 import nl.medsko.lyrassist.repository.WordRepository
@@ -18,4 +19,12 @@ class WordSparksService(private val wordRepository: WordRepository) {
             PairDto(WordDto.from(adjective), WordDto.from(noun))
         }
     }
+
+    /** Noun + noun collisions for the Metaphor variant: "memory is a landlord". */
+    @Transactional(readOnly = true)
+    fun generateMetaphorPairs(count: Int): List<MetaphorPairDto> =
+        wordRepository.findRandomByPartOfSpeech(PartOfSpeech.NOUN.name, count * 2)
+            .chunked(2)
+            .filter { it.size == 2 }
+            .map { (tenor, vehicle) -> MetaphorPairDto(WordDto.from(tenor), WordDto.from(vehicle)) }
 }

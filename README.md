@@ -12,13 +12,18 @@ help you combine saved ideas into snippets, lines, and eventually songs.
 The home screen offers a grid of assist modes. Currently available:
 
 - **Word Sparks** — generates a chosen number (1–20) of adjective + noun pairs as
-  inspiration prompts. Save the pairs that spark something.
+  inspiration prompts. Save the pairs that spark something. Its Metaphor collision
+  variant deals noun + noun equations instead ("memory is a landlord") for you to
+  argue into a song.
 - **Object Writing** — Pat Pattison's exercise: one random noun, a countdown, and you
   write about it through the seven senses (sight, sound, smell, taste, touch, body,
   motion). Pieces are saved for later mining.
 - **Rhyme Explorer** — given a word, shows rhymes across Pattison's spectrum: perfect,
   family, additive, subtractive, assonance, and consonance (because "love/enough" is
   more interesting than "love/dove"). Click any result to explore from there.
+- **Story Seeds** — deals a who / where / conflict prompt for narrative songs
+  ("a locksmith / at a wedding / who owes someone an apology"). The who is a person
+  noun from the dictionary; where and conflict come from curated lists.
 
 There is also an app-wide timer in the navbar (for e.g. Jeff Tweedy's write-a-song-in-20-
 minutes exercise); it keeps counting across modes, and Object Writing drives it too.
@@ -64,8 +69,16 @@ to be running.
 | `POST /api/sparks` `{adjectiveId, nounId}` | Save a pair (409 on duplicate) |
 | `GET /api/sparks` | List saved sparks, newest first |
 | `DELETE /api/sparks/{id}` | Remove a saved spark |
+| `GET /api/word-sparks/metaphors?count=N` | N (1–20) random noun + noun metaphor pairs |
+| `POST /api/metaphors` `{tenorId, vehicleId}` | Save a metaphor (409 on duplicate) |
+| `GET /api/metaphors` | List saved metaphors, newest first |
+| `DELETE /api/metaphors/{id}` | Remove a saved metaphor |
 | `GET /api/rhymes?word=W` | W's rhymes grouped by type (404 if no pronunciation known) |
-| `GET /api/object-writing/prompt` | One random noun to write about |
+| `GET /api/story-seeds/prompt` | Random who / where / conflict prompt |
+| `POST /api/story-seeds` `{whoId, where, conflict}` | Save a seed |
+| `GET /api/story-seeds` | List saved seeds, newest first |
+| `DELETE /api/story-seeds/{id}` | Remove a seed |
+| `GET /api/object-writing/prompt` | One random concrete noun to write about |
 | `POST /api/object-writing/pieces` `{nounId, body, durationSeconds}` | Save a finished piece |
 | `GET /api/object-writing/pieces` | List saved pieces, newest first |
 | `DELETE /api/object-writing/pieces/{id}` | Remove a piece |
@@ -79,7 +92,10 @@ organizations), and anything outside the top 20,000 words of
 [Norvig's frequency list](https://norvig.com/ngrams/count_1w.txt). Each word is annotated
 with its ARPAbet pronunciation and syllable count from the
 [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict) (~79% coverage; words
-without a pronunciation don't appear in rhyme results). To reseed after changing the
+without a pronunciation don't appear in rhyme results). Nouns also carry the WordNet
+lexicographer category of their most common sense (noun.person, noun.artifact, ...),
+which drives Story Seeds' who-column and keeps Object Writing prompts concrete; senses
+WordNet marks offensive get no category, so prompt features never deal them. To reseed after changing the
 filters, rerun the task (inputs are linked in its KDoc):
 
 ```sh
