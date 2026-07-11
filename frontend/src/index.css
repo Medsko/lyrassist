@@ -1,7 +1,3 @@
-.border-dashed {
-  border-style: dashed;
-}
-
 .mode-tile:hover {
   border-color: var(--bs-primary);
 }

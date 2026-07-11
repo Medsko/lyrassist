@@ -1,10 +1,10 @@
 export interface Mode {
   name: string
   description: string
-  path?: string
+  path: string
 }
 
-// The home screen shows a 4x3 grid; modes without a path render as "coming soon".
+// The home screen shows modes in rows of 3.
 export const MODES: Mode[] = [
   {
     name: 'Word Sparks',
@@ -26,8 +26,4 @@ export const MODES: Mode[] = [
     description: 'A who, a where and a conflict to grow a narrative song from',
     path: '/story-seeds',
   },
-  ...Array.from({ length: 8 }, () => ({
-    name: 'Coming soon',
-    description: 'A future way to assist your writing',
-  })),
 ]

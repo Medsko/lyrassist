@@ -5,9 +5,6 @@ Cards on the home screen: 4 columns > 3 columns. No 'Coming soon' placeholders.
 One known edge: a full page reload mid-exercise ends the session early (the timer lives in React state; the draft survives, but the countdown doesn't). Fixing it means persisting the
 timer's end-time to sessionStorage too — small job, happy to do it if reload-during-writing matters to you.
 
-~~The prompt endpoint occasionally deals an abstract noun ("perfection"); Pattison prefers concrete objects.~~ Fixed with the synset work: Object Writing prompts now draw only from
-physical-object categories (noun.artifact, noun.object, noun.food…).
-
 
 # Features
 
