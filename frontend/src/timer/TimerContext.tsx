@@ -10,6 +10,14 @@ import {
 
 export type TimerStatus = 'idle' | 'running' | 'finished'
 
+// sessionStorage (not local): a timer belongs to one tab's writing session.
+const STORAGE_KEY = 'lyrassist.timer'
+
+interface StoredTimer {
+  endTime: number
+  durationSeconds: number
+}
+
 interface TimerState {
   status: TimerStatus
   /** Seconds left; meaningful while running (0 when idle/finished). */
@@ -38,12 +46,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     intervalRef.current = undefined
   }, [])
 
-  const start = useCallback(
-    (duration: number) => {
+  const beginTicking = useCallback(
+    (endTime: number) => {
       clearTick()
-      endTimeRef.current = Date.now() + duration * 1000
-      setDurationSeconds(duration)
-      setRemainingSeconds(duration)
+      endTimeRef.current = endTime
+      setRemainingSeconds(Math.max(0, Math.ceil((endTime - Date.now()) / 1000)))
       setStatus('running')
       intervalRef.current = setInterval(() => {
         const left = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000))
@@ -57,13 +64,44 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     [clearTick],
   )
 
+  const start = useCallback(
+    (duration: number) => {
+      const endTime = Date.now() + duration * 1000
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ endTime, durationSeconds: duration } satisfies StoredTimer),
+      )
+      setDurationSeconds(duration)
+      beginTicking(endTime)
+    },
+    [beginTicking],
+  )
+
+  // Resume a timer that survived a reload; one that ran out while the page
+  // was gone still deserves its "Time!" moment.
+  useEffect(() => {
+    const raw = sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    try {
+      const { endTime, durationSeconds } = JSON.parse(raw) as Partial<StoredTimer>
+      if (typeof endTime !== 'number' || typeof durationSeconds !== 'number') return
+      setDurationSeconds(durationSeconds)
+      if (endTime > Date.now()) beginTicking(endTime)
+      else setStatus('finished')
+    } catch {
+      sessionStorage.removeItem(STORAGE_KEY)
+    }
+  }, [beginTicking])
+
   const cancel = useCallback(() => {
     clearTick()
+    sessionStorage.removeItem(STORAGE_KEY)
     setStatus('idle')
     setRemainingSeconds(0)
   }, [clearTick])
 
   const dismiss = useCallback(() => {
+    sessionStorage.removeItem(STORAGE_KEY)
     setStatus('idle')
     setRemainingSeconds(0)
   }, [])

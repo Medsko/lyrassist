@@ -12,7 +12,11 @@ import RhymeExplorer from './pages/RhymeExplorer.tsx'
 import StorySeeds from './pages/StorySeeds.tsx'
 import WordSparks from './pages/WordSparks.tsx'
 import { NotepadProvider } from './notepad/NotepadContext.tsx'
+import { applyTheme, initialTheme } from './theme.ts'
 import { TimerProvider } from './timer/TimerContext.tsx'
+
+// Set the color mode before the first paint to avoid a light-mode flash.
+applyTheme(initialTheme())
 
 const router = createBrowserRouter([
   {

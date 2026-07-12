@@ -1,9 +1,6 @@
 
 # Bugs/tiny issues
-One known edge: a full page reload mid-exercise ends the session early (the timer lives in React state; the draft survives, but the countdown doesn't). Fixing it means persisting the
-timer's end-time to sessionStorage too — small job, happy to do it if reload-during-writing matters to you.
 
-Dark mode
 
 # Features
 
@@ -49,5 +46,5 @@ Shipped as the Cut-Up mode: paste text and/or tick saved snippets, set the
 fragment size (1–6 words, ±1 jitter), and get shuffled fragments back. Clicking
 a fragment appends it to the notepad — cut-up results aren't persisted on their
 own; the notepad/snippets are the collection point. Cutting happens server-side
-(`cutup/CutUpper.kt`, pure logic unit-tested without Spring), and "Cut again" is
+(`cutup/UpperCut.kt`, pure logic unit-tested without Spring), and "Cut again" is
 simply a fresh request.
