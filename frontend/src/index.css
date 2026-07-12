@@ -6,10 +6,9 @@
   resize: none;
 }
 
-.notepad-snippet-menu {
-  min-width: 18rem;
-  max-height: 24rem;
-  overflow-y: auto;
+/* Keep long first-line previews from widening the picker table. */
+.snippet-preview {
+  max-width: 28rem;
 }
 
 /* At lg+ the responsive Offcanvas renders inline; shape it into a sticky

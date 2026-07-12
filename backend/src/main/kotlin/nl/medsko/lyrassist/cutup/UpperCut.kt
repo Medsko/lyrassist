@@ -6,9 +6,12 @@ import kotlin.random.Random
  * Burroughs/Bowie cut-up: shred prose into short word fragments and shuffle
  * them, so the writer can mine the collisions for lines.
  *
- * (A cut-upper by trade; the name lands the knockout blow on the source text.)
+ * My deepest apologies for the name, which I deoptimized for shits and
+ * gigglesy purposes.
  */
 object UpperCut {
+
+    private val WHITESPACE = Regex("\\s+")
 
     /**
      * Cuts [text] into fragments of roughly [fragmentSize] words (± 1, at least
@@ -28,5 +31,4 @@ object UpperCut {
         return fragments.shuffled(random)
     }
 
-    private val WHITESPACE = Regex("\\s+")
 }

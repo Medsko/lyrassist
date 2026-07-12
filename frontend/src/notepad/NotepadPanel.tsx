@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Button, Dropdown, Form, Offcanvas } from 'react-bootstrap'
-import { deleteSnippet, fetchSnippets, type Snippet } from '../api'
-import { snippetLabel } from '../snippets'
+import { Button, Form, Offcanvas } from 'react-bootstrap'
 import { useNotepad } from './NotepadContext'
+import SnippetPicker from './SnippetPicker'
 
 const EXPANDED_KEY = 'lyrassist.notepad.expanded'
 
@@ -11,8 +10,7 @@ const EXPANDED_KEY = 'lyrassist.notepad.expanded'
 export default function NotepadPanel() {
   const notepad = useNotepad()
   const [expanded, setExpanded] = useState(() => localStorage.getItem(EXPANDED_KEY) !== 'false')
-  const [snippets, setSnippets] = useState<Snippet[]>([])
-  const [listError, setListError] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   function toggleExpanded() {
     const next = !expanded
@@ -24,23 +22,6 @@ export default function NotepadPanel() {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault()
       void notepad.save()
-    }
-  }
-
-  function onSnippetMenuToggle(nextShow: boolean) {
-    if (!nextShow) return
-    setListError(null)
-    fetchSnippets().then(setSnippets).catch((e: Error) => setListError(e.message))
-  }
-
-  async function removeSnippet(e: React.MouseEvent, snippet: Snippet) {
-    e.stopPropagation()
-    try {
-      await deleteSnippet(snippet.id)
-      setSnippets((current) => current.filter((s) => s.id !== snippet.id))
-      if (notepad.snippetId === snippet.id) notepad.detach()
-    } catch (err) {
-      setListError((err as Error).message)
     }
   }
 
@@ -88,40 +69,9 @@ export default function NotepadPanel() {
             <Button variant="outline-secondary" size="sm" onClick={notepad.newDraft}>
               New
             </Button>
-            <Dropdown onToggle={onSnippetMenuToggle}>
-              <Dropdown.Toggle variant="outline-secondary" size="sm" id="snippet-menu">
-                Open
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="notepad-snippet-menu">
-                {listError && <Dropdown.ItemText className="text-danger">{listError}</Dropdown.ItemText>}
-                {!listError && snippets.length === 0 && (
-                  <Dropdown.ItemText className="text-body-secondary">
-                    No saved snippets yet.
-                  </Dropdown.ItemText>
-                )}
-                {snippets.map((snippet) => (
-                  <Dropdown.Item
-                    key={snippet.id}
-                    as="div"
-                    role="button"
-                    className="d-flex align-items-center gap-2"
-                    active={snippet.id === notepad.snippetId}
-                    onClick={() => notepad.loadSnippet(snippet)}
-                  >
-                    <span className="flex-grow-1 text-truncate">{snippetLabel(snippet)}</span>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      className="py-0 px-1"
-                      onClick={(e) => removeSnippet(e, snippet)}
-                      title="Delete this snippet"
-                    >
-                      ✕
-                    </Button>
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <Button variant="outline-secondary" size="sm" onClick={() => setPickerOpen(true)}>
+              Open…
+            </Button>
           </div>
           <Form.Control
             className="mb-2"
@@ -154,6 +104,7 @@ export default function NotepadPanel() {
           </div>
         </Offcanvas.Body>
       </Offcanvas>
+      <SnippetPicker show={pickerOpen} onHide={() => setPickerOpen(false)} />
     </>
   )
 }

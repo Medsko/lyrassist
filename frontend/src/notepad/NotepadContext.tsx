@@ -63,8 +63,11 @@ interface NotepadState {
   dirty: boolean
   /** Start a fresh, unsaved draft (confirms if the current one is dirty). */
   newDraft: () => void
-  /** Replace the draft with a saved snippet (confirms if the current one is dirty). */
-  loadSnippet: (snippet: Snippet) => void
+  /**
+   * Replace the draft with a saved snippet (confirms if the current one is
+   * dirty); returns false when the user kept their unsaved changes.
+   */
+  loadSnippet: (snippet: Snippet) => boolean
   /** Drop the backend link (after the loaded snippet was deleted), keeping the text. */
   detach: () => void
   /** Offcanvas visibility on narrow viewports (below lg the panel is a sheet). */
@@ -136,8 +139,8 @@ export function NotepadProvider({ children }: { children: ReactNode }) {
   }, [confirmDiscard])
 
   const loadSnippet = useCallback(
-    (snippet: Snippet) => {
-      if (!confirmDiscard()) return
+    (snippet: Snippet): boolean => {
+      if (!confirmDiscard()) return false
       setSaveError(null)
       setBuffer({
         snippetId: snippet.id,
@@ -146,6 +149,7 @@ export function NotepadProvider({ children }: { children: ReactNode }) {
         savedTitle: snippet.title,
         savedContent: snippet.content,
       })
+      return true
     },
     [confirmDiscard],
   )
