@@ -24,13 +24,16 @@ object UpperCut {
         val fragments = mutableListOf<String>()
         var index = 0
         while (index < words.size) {
-            val jitter = if (fragmentSize == 1 || random.nextInt(4) != 0) 0
-                         else if (random.nextBoolean()) 1 else -1
+            val jitter = determineJitter(fragmentSize, random)
             val size = (fragmentSize + jitter).coerceAtLeast(1)
             fragments += words.subList(index, minOf(index + size, words.size)).joinToString(" ")
             index += size
         }
         return fragments.shuffled(random)
     }
+
+    private fun determineJitter(fragmentSize: Int, random: Random): Int =
+        if (fragmentSize == 1 || random.nextInt(4) != 0) 0
+        else if (random.nextBoolean()) 1 else -1
 
 }
