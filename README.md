@@ -62,6 +62,7 @@ to be running.
 | `/api/rhymes` | `RhymeController` | `GET ?word=W` — W's rhymes grouped by Pattison type (404 if no pronunciation known) |
 | `/api/story-seeds` | `StorySeedController` | `GET /prompt` for a random who / where / conflict prompt, plus CRUD for saved seeds |
 | `/api/object-writing` | `ObjectWritingController` | `GET /prompt` for a random concrete noun, plus CRUD for saved pieces under `/pieces` |
+| `/api/snippets` | `SnippetController` | CRUD for snippets — reusable free text at any granularity (a line, a verse, a song), written in the notepad |
 
 ## Dictionary
 

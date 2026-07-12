@@ -8,6 +8,20 @@ timer's end-time to sessionStorage too — small job, happy to do it if reload-d
 
 # Features
 
+## Notebook — done
+Shipped as the Notepad: a collapsible side panel (offcanvas sheet below lg) that
+follows the lyricist across modes. Title + plain-text draft, explicit Save button
+(also Ctrl+S), dirty indicator. Title is not required to save — jotting should
+stay frictionless. The context already exposes `append()` so modes can send
+sparks into the pad later.
+
+Second iteration: Save persists to the backend as a *snippet* (`snippet` table,
+`/api/snippets`) — reusable free text at any granularity: a line, a verse, a
+whole song. The panel got twice as wide plus New/Open controls (load, delete)
+over the saved snippets; localStorage is now just the crash buffer, so every
+keystroke survives a reload without needing Save.
+
+
 ## Rhyme explorer — done
 Shipped as the Rhyme Explorer mode. The CMU Pronouncing Dictionary import also filled
 the syllable_count column, which future features (meter work, line matching) can lean on.
@@ -32,4 +46,4 @@ The lexicographer-category work landed with it: `word.category` holds each noun'
 WordNet category, offensive senses excluded at build time.
 
 ## Cut-up mode
-Bowie/Burroughs style: paste in a text, get it back shuffled into fragments to mine for lines. Needs the snippet concept, so it's a later one.
+Bowie/Burroughs style: paste in a text, get it back shuffled into fragments to mine for lines. The snippet concept it needs now exists (`/api/snippets`) — it can draw on saved snippets as source material as well as pasted text.

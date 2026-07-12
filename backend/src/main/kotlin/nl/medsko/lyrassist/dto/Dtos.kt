@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import nl.medsko.lyrassist.domain.Metaphor
 import nl.medsko.lyrassist.domain.ObjectWriting
+import nl.medsko.lyrassist.domain.Snippet
 import nl.medsko.lyrassist.domain.Spark
 import nl.medsko.lyrassist.domain.StorySeed
 import nl.medsko.lyrassist.domain.Word
@@ -103,6 +104,28 @@ data class SaveStorySeedRequest(
     @field:NotBlank
     @field:Size(max = 200)
     val conflict: String,
+)
+
+data class SnippetDto(
+    val id: Long,
+    val title: String,
+    val content: String,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+) {
+    companion object {
+        fun from(snippet: Snippet) =
+            SnippetDto(snippet.id, snippet.title, snippet.content, snippet.createdAt, snippet.updatedAt)
+    }
+}
+
+/** Title is deliberately optional: saving a jotted line must stay frictionless. */
+data class SaveSnippetRequest(
+    @field:Size(max = 200)
+    val title: String = "",
+    @field:NotBlank
+    @field:Size(max = 50_000)
+    val content: String,
 )
 
 data class SaveObjectWritingRequest(

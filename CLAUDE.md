@@ -47,6 +47,7 @@ There are no frontend unit tests. For end-to-end verification (launching everyth
 - `main.tsx` defines the React Router tree: `App.tsx` is the layout shell (navbar + `<Outlet/>`), one page component per mode under `pages/`.
 - `modes.ts` is the home-grid registry — a new mode means an entry here (name/description/path), a page in `pages/`, and a route in `main.tsx`. Modes without a `path` render as "coming soon" tiles.
 - `api.ts` is the single hand-written API client: typed wrappers over `fetch` that throw `ApiError` (carrying HTTP status + problem-detail message). Add new endpoints here, not inline in components.
+- `notepad/NotepadContext.tsx` is the one app-wide lyrics notepad (provider above the router, panel rendered by `App.tsx`): the draft survives route changes, buffers every keystroke to localStorage, and the explicit Save button/Ctrl+S persists it as a backend *snippet* (`/api/snippets` — reusable free text at any granularity; future modes like cut-up mine these). `append()` is the hook for modes to push text into it.
 - `timer/TimerContext.tsx` is the one app-wide timer (provider above the router, widget in the navbar). It survives route changes; Object Writing drives it via `useTimer()`. Don't add per-page timers.
 
 ## Gotchas

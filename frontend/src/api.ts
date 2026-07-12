@@ -147,6 +147,39 @@ export function deleteStorySeed(id: number): Promise<void> {
   return request(`/api/story-seeds/${id}`, { method: 'DELETE' })
 }
 
+/** Reusable free text at any granularity — a line, a verse, a whole song. */
+export interface Snippet {
+  id: number
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+export function fetchSnippets(): Promise<Snippet[]> {
+  return request('/api/snippets')
+}
+
+export function createSnippet(title: string, content: string): Promise<Snippet> {
+  return request('/api/snippets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, content }),
+  })
+}
+
+export function updateSnippet(id: number, title: string, content: string): Promise<Snippet> {
+  return request(`/api/snippets/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, content }),
+  })
+}
+
+export function deleteSnippet(id: number): Promise<void> {
+  return request(`/api/snippets/${id}`, { method: 'DELETE' })
+}
+
 export interface ObjectWriting {
   id: number
   noun: Word

@@ -10,6 +10,7 @@ import ObjectWriting from './pages/ObjectWriting.tsx'
 import RhymeExplorer from './pages/RhymeExplorer.tsx'
 import StorySeeds from './pages/StorySeeds.tsx'
 import WordSparks from './pages/WordSparks.tsx'
+import { NotepadProvider } from './notepad/NotepadContext.tsx'
 import { TimerProvider } from './timer/TimerContext.tsx'
 
 const router = createBrowserRouter([
@@ -31,7 +32,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TimerProvider>
-      <RouterProvider router={router} />
+      <NotepadProvider>
+        <RouterProvider router={router} />
+      </NotepadProvider>
     </TimerProvider>
   </StrictMode>,
 )

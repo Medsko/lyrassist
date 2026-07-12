@@ -1,3 +1,44 @@
+.min-width-0 {
+  min-width: 0;
+}
+
+.notepad-text {
+  resize: none;
+}
+
+.notepad-snippet-menu {
+  min-width: 18rem;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+/* At lg+ the responsive Offcanvas renders inline; shape it into a sticky
+   side panel there. Bootstrap's inline-offcanvas resets use !important,
+   hence the counter-!importants. */
+@media (min-width: 992px) {
+  .notepad-panel {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 1rem;
+    flex: 0 0 auto;
+    width: 42rem !important;
+    height: calc(100vh - 7rem) !important;
+    border: var(--bs-border-width) solid var(--bs-border-color) !important;
+    border-radius: var(--bs-border-radius);
+  }
+
+  .notepad-panel.notepad-collapsed {
+    display: none;
+  }
+
+  .notepad-panel .offcanvas-body {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 1rem;
+  }
+}
+
 .mode-tile:hover {
   border-color: var(--bs-primary);
 }
