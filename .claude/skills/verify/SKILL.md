@@ -33,6 +33,9 @@ description: Build, launch, and drive Lyrassist (Spring Boot API + React fronten
 
 ## Gotchas
 
+- The user often already runs the backend and frontend from the IDE, so ports :8080/:5173
+  may be in use. A frontend already on :5173 can usually be reused as-is; a backend on :8080
+  may be stale — kill it and start your own `bootRun` if you need your changes live.
 - `./gradlew build` runs a `@SpringBootTest` context test that needs the Postgres
   container up.
 - Toolchain JDK 21 is auto-provisioned by foojay on first build (system has Java 25 only).
