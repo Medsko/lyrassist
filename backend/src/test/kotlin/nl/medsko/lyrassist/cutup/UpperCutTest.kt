@@ -35,6 +35,15 @@ class UpperCutTest {
     }
 
     @Test
+    fun `roughly three quarters of the fragments match the requested size exactly`() {
+        val longText = (1..2000).joinToString(" ") { "word$it" }
+        val fragments = UpperCut.cutUp(longText, fragmentSize = 3, random = Random(42))
+        val exact = fragments.count { it.split(" ").size == 3 }
+        val ratio = exact.toDouble() / fragments.size
+        assertTrue(ratio in 0.70..0.80, "expected ~75% exact-size fragments, got $ratio")
+    }
+
+    @Test
     fun `fragment size one yields single words`() {
         val fragments = UpperCut.cutUp(text, fragmentSize = 1, random = Random(1))
         assertTrue(fragments.all { !it.contains(" ") })

@@ -92,6 +92,11 @@ export default function CutUp() {
               <Form.Label htmlFor="fragment-size">
                 Fragment size: <strong>{fragmentSize}</strong> {fragmentSize === 1 ? 'word' : 'words'}
               </Form.Label>
+              {fragmentSize > 1 && (
+                <div className="form-text mb-2">
+                  Some fragments come out a word longer or shorter — deliberate raggedness, like real scissors.
+                </div>
+              )}
               <Row className="align-items-center g-3">
                 <Col>
                   <Form.Range
