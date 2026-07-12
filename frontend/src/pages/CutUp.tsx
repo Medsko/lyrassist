@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Card, Col, Form, Row } from 'react-bootstrap'
-import { cutUp, fetchSnippets, type Snippet } from '../api'
+import { Alert, Button, Card, Col, Form, Modal, Row } from 'react-bootstrap'
+import { createSeed, cutUp, deleteSeed, fetchSeeds, fetchSnippets, type Snippet } from '../api'
+import TextPicker from '../components/TextPicker'
 import { useNotepad } from '../notepad/NotepadContext'
 import { snippetLabel } from '../snippets'
+
 
 export default function CutUp() {
   const notepad = useNotepad()
@@ -14,6 +16,11 @@ export default function CutUp() {
   const [sent, setSent] = useState<Set<number>>(new Set())
   const [cutting, setCutting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saveSeedOpen, setSaveSeedOpen] = useState(false)
+  const [seedTitle, setSeedTitle] = useState('')
+  const [seedSource, setSeedSource] = useState('')
+  const [savingSeed, setSavingSeed] = useState(false)
+  const [seedPickerOpen, setSeedPickerOpen] = useState(false)
 
   useEffect(() => {
     fetchSnippets().then(setSnippets).catch((e: Error) => setError(e.message))
@@ -40,6 +47,21 @@ export default function CutUp() {
       setError((e as Error).message)
     } finally {
       setCutting(false)
+    }
+  }
+
+  async function saveSeed() {
+    setSavingSeed(true)
+    setError(null)
+    try {
+      await createSeed(seedTitle, seedSource, text)
+      setSaveSeedOpen(false)
+      setSeedTitle('')
+      setSeedSource('')
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setSavingSeed(false)
     }
   }
 
@@ -70,6 +92,19 @@ export default function CutUp() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
               />
+              <div className="d-flex gap-2 mb-3">
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  disabled={text.trim() === ''}
+                  onClick={() => setSaveSeedOpen(true)}
+                >
+                  Save seed
+                </Button>
+                <Button variant="outline-secondary" size="sm" onClick={() => setSeedPickerOpen(true)}>
+                  Open seed…
+                </Button>
+              </div>
               <Form.Label>…and/or saved snippets</Form.Label>
               {snippets.length === 0 ? (
                 <p className="text-body-secondary small">
@@ -141,6 +176,61 @@ export default function CutUp() {
           )}
         </Col>
       </Row>
+
+      <Modal show={saveSeedOpen} onHide={() => setSaveSeedOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Save seed</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Label htmlFor="seed-title">Title (optional)</Form.Label>
+          <Form.Control
+            id="seed-title"
+            autoFocus
+            maxLength={200}
+            placeholder="Howl, first section"
+            value={seedTitle}
+            onChange={(e) => setSeedTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void saveSeed()
+            }}
+          />
+        </Modal.Body>
+        <Modal.Body>
+          <Form.Label htmlFor="seed-source">Source (optional)</Form.Label>
+          <Form.Control
+            id="seed-source"
+            autoFocus
+            maxLength={200}
+            placeholder="Author, artist or website"
+            value={seedSource}
+            onChange={(e) => setSeedSource(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void saveSeed()
+            }}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setSaveSeedOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={saveSeed} disabled={savingSeed}>
+            {savingSeed ? 'Saving…' : 'Save'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <TextPicker
+        show={seedPickerOpen}
+        onHide={() => setSeedPickerOpen(false)}
+        noun="seed"
+        emptyMessage="No saved seeds yet — paste a text and hit Save seed."
+        fetchItems={fetchSeeds}
+        deleteItem={deleteSeed}
+        onPick={(seed) => {
+          setText(seed.content)
+          return true
+        }}
+      />
     </>
   )
 }

@@ -2,8 +2,6 @@
 # Bugs/tiny issues
 
 ## Cut-up mode issues
-- Saving Seeds (term I came up with for "Text to shred") to database for later use. Including a search modal 
-like the one for Snippets in the Notepad.
 
 - Should we sanitize the fragments, i.e. remove brackets, hyphens etc.? Maybe keep them in the Seed, but 
 remove them before returning them from the cut-up service?
@@ -16,7 +14,6 @@ entire Seed text and then randomly select the specified number of fragments from
 - When using lyrics from another song as Seed, repetition is likely to occur. This is fine if it leads to 
 different combinations, but completely duplicated fragments should be filtered out.
 Filtering should occur after sanitizing, but before limiting the number of returned fragments.
-
 
 # Features
 
@@ -66,6 +63,10 @@ own; the notepad/snippets are the collection point. Cutting happens server-side
 (`cutup/UpperCut.kt`, pure logic unit-tested without Spring), and "Cut again" is
 simply a fresh request.
 
-## Cut-up mode - Seed database
-The ability to save 'seeds' - a poem or lyrics that can be used for cut-up. 
+## Cut-up mode - Seed database — done
+Shipped: Seeds (texts to shred) persist in their own `seed` table (`/api/seeds`,
+a twin of the snippet stack). The Cut-Up page grew "Save seed" (optional title,
+like snippets) and "Open seed…" — a search modal that loads the seed back into
+the textarea. The snippet picker was generalized into a shared `TextPicker`
+component that both dialogs use.
 

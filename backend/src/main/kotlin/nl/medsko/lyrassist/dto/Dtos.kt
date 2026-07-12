@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import nl.medsko.lyrassist.domain.Metaphor
 import nl.medsko.lyrassist.domain.ObjectWriting
+import nl.medsko.lyrassist.domain.Seed
 import nl.medsko.lyrassist.domain.Snippet
 import nl.medsko.lyrassist.domain.Spark
 import nl.medsko.lyrassist.domain.StorySeed
@@ -132,6 +133,31 @@ data class SnippetDto(
 data class SaveSnippetRequest(
     @field:Size(max = 200)
     val title: String = "",
+    @field:NotBlank
+    @field:Size(max = 50_000)
+    val content: String,
+)
+
+data class SeedDto(
+    val id: Long,
+    val title: String,
+    val source: String,
+    val content: String,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+) {
+    companion object {
+        fun from(seed: Seed) =
+            SeedDto(seed.id, seed.title, seed.source, seed.content, seed.createdAt, seed.updatedAt)
+    }
+}
+
+/** Title and source are optional — saving a found text shouldn't demand ceremony. */
+data class SaveSeedRequest(
+    @field:Size(max = 200)
+    val title: String = "",
+    @field:Size(max = 200)
+    val source: String = "",
     @field:NotBlank
     @field:Size(max = 50_000)
     val content: String,

@@ -1,7 +1,5 @@
-import type { Snippet } from './api'
-
-/** A snippet's display name: its title, or its first non-blank line, truncated. */
-export function snippetLabel(snippet: Snippet): string {
+/** A snippet's/seed's display name: its title, or its first non-blank line, truncated. */
+export function snippetLabel(snippet: { title: string; content: string }): string {
   const label =
     snippet.title.trim() ||
     snippet.content.split('\n').find((line) => line.trim())?.trim() ||

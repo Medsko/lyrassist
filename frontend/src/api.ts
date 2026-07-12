@@ -180,6 +180,40 @@ export function deleteSnippet(id: number): Promise<void> {
   return request(`/api/snippets/${id}`, { method: 'DELETE' })
 }
 
+/** A source text for cut-up — a poem, lyrics, prose — saved for reuse. */
+export interface Seed {
+  id: number
+  title: string
+  source: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+export function fetchSeeds(): Promise<Seed[]> {
+  return request('/api/seeds')
+}
+
+export function createSeed(title: string, source: string, content: string): Promise<Seed> {
+  return request('/api/seeds', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, source, content }),
+  })
+}
+
+export function updateSeed(id: number, title: string, source: string, content: string): Promise<Seed> {
+  return request(`/api/seeds/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, source, content }),
+  })
+}
+
+export function deleteSeed(id: number): Promise<void> {
+  return request(`/api/seeds/${id}`, { method: 'DELETE' })
+}
+
 /** Cut pasted text and/or snippets into shuffled fragments; each call recuts. */
 export function cutUp(
   text: string,
