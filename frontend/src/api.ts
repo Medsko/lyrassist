@@ -180,6 +180,19 @@ export function deleteSnippet(id: number): Promise<void> {
   return request(`/api/snippets/${id}`, { method: 'DELETE' })
 }
 
+/** Cut pasted text and/or snippets into shuffled fragments; each call recuts. */
+export function cutUp(
+  text: string,
+  snippetIds: number[],
+  fragmentSize: number,
+): Promise<string[]> {
+  return request('/api/cut-up/fragments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, snippetIds, fragmentSize }),
+  })
+}
+
 export interface ObjectWriting {
   id: number
   noun: Word

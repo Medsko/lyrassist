@@ -26,4 +26,9 @@ export const MODES: Mode[] = [
     description: 'A who, a where and a conflict to grow a narrative song from',
     path: '/story-seeds',
   },
+  {
+    name: 'Cut-Up',
+    description: 'Shred a text — or your snippets — into fragments to mine for lines, Bowie-style',
+    path: '/cut-up',
+  },
 ]

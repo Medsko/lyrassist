@@ -106,6 +106,15 @@ data class SaveStorySeedRequest(
     val conflict: String,
 )
 
+data class CutUpRequest(
+    @field:Size(max = 50_000)
+    val text: String = "",
+    val snippetIds: List<Long> = emptyList(),
+    @field:Min(1)
+    @field:Max(6)
+    val fragmentSize: Int,
+)
+
 data class SnippetDto(
     val id: Long,
     val title: String,

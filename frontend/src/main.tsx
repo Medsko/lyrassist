@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import App from './App.tsx'
+import CutUp from './pages/CutUp.tsx'
 import Home from './pages/Home.tsx'
 import NotFound from './pages/NotFound.tsx'
 import ObjectWriting from './pages/ObjectWriting.tsx'
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
       { path: 'object-writing', element: <ObjectWriting /> },
       { path: 'rhyme-explorer', element: <RhymeExplorer /> },
       { path: 'story-seeds', element: <StorySeeds /> },
+      { path: 'cut-up', element: <CutUp /> },
       { path: '*', element: <NotFound /> },
     ],
   },

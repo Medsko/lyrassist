@@ -1,17 +1,10 @@
 import { useState } from 'react'
 import { Button, Dropdown, Form, Offcanvas } from 'react-bootstrap'
 import { deleteSnippet, fetchSnippets, type Snippet } from '../api'
+import { snippetLabel } from '../snippets'
 import { useNotepad } from './NotepadContext'
 
 const EXPANDED_KEY = 'lyrassist.notepad.expanded'
-
-function snippetLabel(snippet: Snippet): string {
-  const label =
-    snippet.title.trim() ||
-    snippet.content.split('\n').find((line) => line.trim())?.trim() ||
-    'Untitled'
-  return label.length > 60 ? `${label.slice(0, 60)}…` : label
-}
 
 // The persistent lyrics pad: a sticky side panel on wide screens (collapsible
 // to a slim strip), an end-placed offcanvas sheet on narrow ones.
