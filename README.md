@@ -21,10 +21,16 @@ The home screen offers a grid of assist modes. Currently available:
 - **Story Seeds** — deals a who / where / conflict prompt for narrative songs
   ("a locksmith / at a wedding / who owes someone an apology"). The who is a person
   noun from the dictionary; where and conflict come from curated lists.
+- **Cut-up** — cuts up a text into fragments of a specified number of words, which
+  the user can rearrange create something new (credits to William S. Burroughs). Such
+  Seed texts can be saved to and queried from the database.
 
 There is also an app-wide timer in the navbar (for e.g. Jeff Tweedy's write-a-song-in-20-
 minutes exercise); it keeps counting across modes, and Object Writing drives it too.
 See `roadmap.md` for planned modes.
+
+An app-wide Notepad is available for the user to jot down ideas in, be it some lines,
+a verse, or an entire song. These can be saved to the database (as Snippet entity).
 
 ## Stack
 
