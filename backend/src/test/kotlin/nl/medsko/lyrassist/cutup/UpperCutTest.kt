@@ -47,7 +47,37 @@ class UpperCutTest {
     fun `fragment size one yields single words`() {
         val fragments = UpperCut.cutUp(text, fragmentSize = 1, random = Random(1))
         assertTrue(fragments.all { !it.contains(" ") })
-        assertEquals(words.size, fragments.size)
+        // "change" occurs twice in the text; the duplicate fragment is filtered out.
+        assertEquals(words.distinct().size, fragments.size)
+    }
+
+    @Test
+    fun `punctuation is stripped and hyphens cut words apart`() {
+        val fragments = UpperCut.cutUp("(Time) may — change… \"me\", cut-up!", fragmentSize = 1, random = Random(1))
+        assertEquals(listOf("Time", "may", "change", "me", "cut", "up").sorted(), fragments.sorted())
+    }
+
+    @Test
+    fun `intra-word apostrophes survive sanitizing`() {
+        val fragments = UpperCut.cutUp("I can't trace 'time'", fragmentSize = 1, random = Random(1))
+        assertEquals(listOf("I", "can't", "trace", "time").sorted(), fragments.sorted())
+    }
+
+    @Test
+    fun `duplicate fragments are filtered out`() {
+        val fragments = UpperCut.cutUp("la la la la la la", fragmentSize = 1, random = Random(1))
+        assertEquals(listOf("la"), fragments)
+    }
+
+    @Test
+    fun `maxFragments caps the result but the whole text is considered`() {
+        val longText = (1..300).joinToString(" ") { "word$it" }
+        val picked = (1..20).flatMap { seed ->
+            UpperCut.cutUp(longText, fragmentSize = 1, maxFragments = 5, random = Random(seed))
+                .also { assertEquals(5, it.size) }
+        }
+        // Draws across seeds reach beyond any single prefix of the text.
+        assertTrue(picked.any { it.removePrefix("word").toInt() > 250 })
     }
 
     @Test

@@ -114,6 +114,8 @@ data class CutUpRequest(
     @field:Min(1)
     @field:Max(6)
     val fragmentSize: Int,
+    @field:Min(1)
+    val maxFragments: Int? = null,
 )
 
 data class SnippetDto(

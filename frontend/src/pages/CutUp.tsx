@@ -12,6 +12,7 @@ export default function CutUp() {
   const [snippets, setSnippets] = useState<Snippet[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [fragmentSize, setFragmentSize] = useState(3)
+  const [maxFragments, setMaxFragments] = useState('')
   const [fragments, setFragments] = useState<string[]>([])
   const [sent, setSent] = useState<Set<number>>(new Set())
   const [cutting, setCutting] = useState(false)
@@ -41,7 +42,8 @@ export default function CutUp() {
     setCutting(true)
     setError(null)
     try {
-      setFragments(await cutUp(text, [...selectedIds], fragmentSize))
+      const max = Number.parseInt(maxFragments, 10)
+      setFragments(await cutUp(text, [...selectedIds], fragmentSize, Number.isNaN(max) ? null : max))
       setSent(new Set())
     } catch (e) {
       setError((e as Error).message)
@@ -132,6 +134,22 @@ export default function CutUp() {
                   Some fragments come out a word longer or shorter — deliberate raggedness, like real scissors.
                 </div>
               )}
+              <Form.Label htmlFor="max-fragments" className="mt-2">
+                Max fragments (optional)
+              </Form.Label>
+              <div className="form-text mb-2">
+                The whole text is cut up either way; this many fragments are drawn at random from the pile.
+              </div>
+              <Form.Control
+                id="max-fragments"
+                type="number"
+                min={1}
+                className="mb-3"
+                style={{ maxWidth: '10rem' }}
+                placeholder="All"
+                value={maxFragments}
+                onChange={(e) => setMaxFragments(e.target.value)}
+              />
               <Row className="align-items-center g-3">
                 <Col>
                   <Form.Range

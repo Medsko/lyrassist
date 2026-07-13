@@ -11,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException
 class CutUpService(private val snippetRepository: SnippetRepository) {
 
     @Transactional(readOnly = true)
-    fun cutUp(text: String, snippetIds: List<Long>, fragmentSize: Int): List<String> {
+    fun cutUp(text: String, snippetIds: List<Long>, fragmentSize: Int, maxFragments: Int?): List<String> {
         val snippets = snippetRepository.findAllById(snippetIds)
         val missing = snippetIds.toSet() - snippets.map { it.id }.toSet()
         if (missing.isNotEmpty()) {
@@ -24,6 +24,6 @@ class CutUpService(private val snippetRepository: SnippetRepository) {
                 "Provide text or at least one snippet to cut up",
             )
         }
-        return UpperCut.cutUp(source, fragmentSize)
+        return UpperCut.cutUp(source, fragmentSize, maxFragments)
     }
 }

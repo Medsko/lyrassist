@@ -219,11 +219,12 @@ export function cutUp(
   text: string,
   snippetIds: number[],
   fragmentSize: number,
+  maxFragments: number | null,
 ): Promise<string[]> {
   return request('/api/cut-up/fragments', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, snippetIds, fragmentSize }),
+    body: JSON.stringify({ text, snippetIds, fragmentSize, maxFragments }),
   })
 }
 

@@ -16,5 +16,5 @@ class CutUpController(private val cutUpService: CutUpService) {
     // cuts and shuffles anew, so "cut again" is simply a repeat request.
     @PostMapping("/fragments")
     fun fragments(@Valid @RequestBody request: CutUpRequest): List<String> =
-        cutUpService.cutUp(request.text, request.snippetIds, request.fragmentSize)
+        cutUpService.cutUp(request.text, request.snippetIds, request.fragmentSize, request.maxFragments)
 }
