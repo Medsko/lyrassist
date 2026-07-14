@@ -23,6 +23,8 @@ interface TextPickerProps<T extends PickerItem> {
   onPick: (item: T) => boolean
   onDeleted?: (item: T) => void
   activeId?: number | null
+  /** For multi-select pickers: all these rows render as active. */
+  activeIds?: Set<number>
 }
 
 // A searchable "Open" dialog over saved texts (snippets, seeds, ...).
@@ -37,6 +39,7 @@ export default function TextPicker<T extends PickerItem>({
   onPick,
   onDeleted,
   activeId,
+  activeIds,
 }: TextPickerProps<T>) {
   const [items, setItems] = useState<T[]>([])
   const [search, setSearch] = useState('')
@@ -110,7 +113,7 @@ export default function TextPicker<T extends PickerItem>({
                 <tr
                   key={item.id}
                   role="button"
-                  className={item.id === activeId ? 'table-active' : undefined}
+                  className={item.id === activeId || activeIds?.has(item.id) ? 'table-active' : undefined}
                   onClick={() => open(item)}
                 >
                   <td>

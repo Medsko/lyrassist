@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Alert, Button, Card, Col, Form, Modal, Row } from 'react-bootstrap'
-import { createSeed, cutUp, deleteSeed, fetchSeeds, fetchSnippets, type Snippet } from '../api'
+import { createSeed, cutUp, deleteSeed, deleteSnippet, fetchSeeds, fetchSnippets, type Snippet } from '../api'
 import TextPicker from '../components/TextPicker'
 import { useNotepad } from '../notepad/NotepadContext'
 import { snippetLabel } from '../snippets'
@@ -9,8 +9,7 @@ import { snippetLabel } from '../snippets'
 export default function CutUp() {
   const notepad = useNotepad()
   const [text, setText] = useState('')
-  const [snippets, setSnippets] = useState<Snippet[]>([])
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [selectedSnippets, setSelectedSnippets] = useState<Snippet[]>([])
   const [fragmentSize, setFragmentSize] = useState(3)
   const [maxFragments, setMaxFragments] = useState('')
   const [fragments, setFragments] = useState<string[]>([])
@@ -22,20 +21,16 @@ export default function CutUp() {
   const [seedSource, setSeedSource] = useState('')
   const [savingSeed, setSavingSeed] = useState(false)
   const [seedPickerOpen, setSeedPickerOpen] = useState(false)
+  const [snippetPickerOpen, setSnippetPickerOpen] = useState(false)
 
-  useEffect(() => {
-    fetchSnippets().then(setSnippets).catch((e: Error) => setError(e.message))
-  }, [])
+  const hasSource = text.trim() !== '' || selectedSnippets.length > 0
 
-  const hasSource = text.trim() !== '' || selectedIds.size > 0
-
-  function toggleSnippet(id: number) {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  function toggleSnippet(snippet: Snippet) {
+    setSelectedSnippets((current) =>
+      current.some((s) => s.id === snippet.id)
+        ? current.filter((s) => s.id !== snippet.id)
+        : [...current, snippet],
+    )
   }
 
   async function cut() {
@@ -43,7 +38,9 @@ export default function CutUp() {
     setError(null)
     try {
       const max = Number.parseInt(maxFragments, 10)
-      setFragments(await cutUp(text, [...selectedIds], fragmentSize, Number.isNaN(max) ? null : max))
+      setFragments(
+        await cutUp(text, selectedSnippets.map((s) => s.id), fragmentSize, Number.isNaN(max) ? null : max),
+      )
       setSent(new Set())
     } catch (e) {
       setError((e as Error).message)
@@ -107,57 +104,62 @@ export default function CutUp() {
                   Open seed…
                 </Button>
               </div>
-              <Form.Label>…and/or saved snippets</Form.Label>
-              {snippets.length === 0 ? (
-                <p className="text-body-secondary small">
-                  No saved snippets yet — the notepad saves them.
-                </p>
-              ) : (
-                <div className="mb-3">
-                  {snippets.map((snippet) => (
-                    <Form.Check
-                      key={snippet.id}
-                      id={`cutup-snippet-${snippet.id}`}
-                      type="checkbox"
-                      label={snippetLabel(snippet)}
-                      checked={selectedIds.has(snippet.id)}
-                      onChange={() => toggleSnippet(snippet.id)}
-                    />
+              <Form.Label className="d-block">…and/or saved snippets</Form.Label>
+              <div className="mb-3">
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={() => setSnippetPickerOpen(true)}
+                >
+                  Select snippets…
+                </Button>
+              </div>
+              {selectedSnippets.length > 0 && (
+                <ul className="mb-3">
+                  {selectedSnippets.map((snippet) => (
+                    <li key={snippet.id}>
+                      {snippetLabel(snippet)}{' '}
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="p-0 align-baseline link-danger text-decoration-none"
+                        title="Remove from the pile"
+                        onClick={() => toggleSnippet(snippet)}
+                      >
+                        ✕
+                      </Button>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
               <Form.Label htmlFor="fragment-size">
                 Fragment size: <strong>{fragmentSize}</strong> {fragmentSize === 1 ? 'word' : 'words'}
               </Form.Label>
+              <Form.Range
+                id="fragment-size"
+                min={1}
+                max={6}
+                value={fragmentSize}
+                onChange={(e) => setFragmentSize(Number(e.target.value))}
+              />
               {fragmentSize > 1 && (
-                <div className="form-text mb-2">
+                <div className="form-text">
                   Some fragments come out a word longer or shorter — deliberate raggedness, like real scissors.
                 </div>
               )}
-              <Form.Label htmlFor="max-fragments" className="mt-2">
+              <Form.Label htmlFor="max-fragments" className="mt-3">
                 Max fragments (optional)
               </Form.Label>
-              <div className="form-text mb-2">
-                The whole text is cut up either way; this many fragments are drawn at random from the pile.
-              </div>
-              <Form.Control
-                id="max-fragments"
-                type="number"
-                min={1}
-                className="mb-3"
-                style={{ maxWidth: '10rem' }}
-                placeholder="All"
-                value={maxFragments}
-                onChange={(e) => setMaxFragments(e.target.value)}
-              />
               <Row className="align-items-center g-3">
                 <Col>
-                  <Form.Range
-                    id="fragment-size"
+                  <Form.Control
+                    id="max-fragments"
+                    type="number"
                     min={1}
-                    max={6}
-                    value={fragmentSize}
-                    onChange={(e) => setFragmentSize(Number(e.target.value))}
+                    style={{ maxWidth: '10rem' }}
+                    placeholder="All"
+                    value={maxFragments}
+                    onChange={(e) => setMaxFragments(e.target.value)}
                   />
                 </Col>
                 <Col xs="auto">
@@ -166,6 +168,9 @@ export default function CutUp() {
                   </Button>
                 </Col>
               </Row>
+              <div className="form-text">
+                The whole text is cut up either way; this many fragments are drawn at random from the pile.
+              </div>
             </Card.Body>
           </Card>
         </Col>
@@ -236,6 +241,23 @@ export default function CutUp() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <TextPicker
+        show={snippetPickerOpen}
+        onHide={() => setSnippetPickerOpen(false)}
+        noun="snippet"
+        emptyMessage="No saved snippets yet — the notepad saves them."
+        fetchItems={fetchSnippets}
+        deleteItem={deleteSnippet}
+        activeIds={new Set(selectedSnippets.map((s) => s.id))}
+        onPick={(snippet) => {
+          toggleSnippet(snippet)
+          return false
+        }}
+        onDeleted={(snippet) =>
+          setSelectedSnippets((current) => current.filter((s) => s.id !== snippet.id))
+        }
+      />
 
       <TextPicker
         show={seedPickerOpen}
