@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Alert, Button, Card, Col, Form, Modal, Row } from 'react-bootstrap'
 import { createSeed, cutUp, deleteSeed, deleteSnippet, fetchSeeds, fetchSnippets, type Snippet } from '../api'
 import TextPicker from '../components/TextPicker'
@@ -22,6 +22,28 @@ export default function CutUp() {
   const [savingSeed, setSavingSeed] = useState(false)
   const [seedPickerOpen, setSeedPickerOpen] = useState(false)
   const [snippetPickerOpen, setSnippetPickerOpen] = useState(false)
+  const textRef = useRef<HTMLTextAreaElement>(null)
+
+  // Grow the textarea to fit its content (also when a seed is opened), but never
+  // so far that the page itself starts scrolling — past that point the textarea
+  // keeps its own scrollbar instead.
+  useLayoutEffect(() => {
+    const el = textRef.current
+    if (!el) return
+    const resize = () => {
+      el.style.height = 'auto'
+      const minHeight = el.offsetHeight // height:auto = the rows={6} baseline
+      el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`
+      const doc = document.documentElement
+      const pageOverflow = doc.scrollHeight - doc.clientHeight
+      if (pageOverflow > 0) {
+        el.style.height = `${Math.max(el.offsetHeight - pageOverflow, minHeight)}px`
+      }
+    }
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
+  }, [text])
 
   const hasSource = text.trim() !== '' || selectedSnippets.length > 0
 
@@ -85,8 +107,10 @@ export default function CutUp() {
               <Form.Control
                 id="cutup-text"
                 as="textarea"
+                ref={textRef}
                 rows={6}
                 className="mb-3"
+                style={{ overflowY: 'auto', resize: 'none' }}
                 placeholder="Paste a page, a poem, yesterday's news…"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
